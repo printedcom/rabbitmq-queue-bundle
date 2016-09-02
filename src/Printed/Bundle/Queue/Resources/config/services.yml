@@ -1,0 +1,16 @@
+services:
+
+  # Queue Task Dispatcher.
+  printed.bundle.queue.service.queue_task_dispatcher:
+    class: 'Printed\Bundle\Queue\Service\QueueTaskDispatcher'
+    arguments:
+      - '@doctrine.orm.entity_manager'
+      - '@monolog.logger.queue'
+      - '@validator'
+      - '@service_container'
+
+  # Queue Maintenance Manager.
+  printed.bundle.queue.service.queue_maintenance:
+    class: 'Printed\Bundle\Queue\Service\QueueMaintenance'
+    arguments:
+      - '%kernel.cache_dir%'

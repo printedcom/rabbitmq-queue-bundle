@@ -1,0 +1,10 @@
+services:
+
+  # Queue Task Repository.
+  printed.bundle.queue.repository.queue_task:
+    class: 'Printed\Bundle\Queue\Repository\QueueTaskRepository'
+    factory: ["@doctrine.orm.entity_manager", getRepository]
+    arguments:
+      - 'Printed\Bundle\Queue\Entity\QueueTask'
+    calls:
+      - [setContainer, ["@service_container"]]
