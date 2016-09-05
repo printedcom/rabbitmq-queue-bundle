@@ -83,7 +83,7 @@ class QueueTaskDispatcher
         }
 
         $task = new QueueTask;
-        $task->setPublicId($this->container->get('uuid')->uuid4());
+        $task->setPublicId($this->container->get('printed.bundle.queue.service.uuid')->uuid4());
 
         $task->setStatus(QueueTaskInterface::STATUS_PENDING);
         $task->setExchange($payload::getExchangeName());

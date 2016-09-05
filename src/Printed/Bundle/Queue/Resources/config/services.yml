@@ -14,3 +14,7 @@ services:
     class: 'Printed\Bundle\Queue\Service\QueueMaintenance'
     arguments:
       - '%kernel.cache_dir%'
+
+  # UUID service.
+  printed.bundle.queue.service.uuid:
+    class: 'Ramsey\Uuid\UuidFactory'
