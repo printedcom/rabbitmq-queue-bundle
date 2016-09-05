@@ -15,7 +15,7 @@
 
   "autoload": {
     "psr-4": {
-      "Printed\\Bundle\\Queue\\": ""
+      "Printed\\Bundle\\Queue\\": "src/Printed/Bundle/Queue"
     }
   },
 
