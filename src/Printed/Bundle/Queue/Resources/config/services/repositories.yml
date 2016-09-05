@@ -6,5 +6,3 @@ services:
     factory: ["@doctrine.orm.entity_manager", getRepository]
     arguments:
       - 'Printed\Bundle\Queue\Entity\QueueTask'
-    calls:
-      - [setContainer, ["@service_container"]]
