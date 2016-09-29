@@ -2,6 +2,7 @@
 
 namespace Printed\Bundle\Queue\Entity;
 
+use Printed\Bundle\Queue\Common\Traits\GetDataItemFromDataOrThrowTrait;
 use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -12,6 +13,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class QueueTask implements QueueTaskInterface
 {
+
+    use GetDataItemFromDataOrThrowTrait;
 
     /**
      * @var int
@@ -162,6 +165,22 @@ class QueueTask implements QueueTaskInterface
     /**
      * {@inheritdoc}
      */
+    public function isStatus(int $status): bool
+    {
+        return $this->status === $status;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isAnyFailedStatus(): bool
+    {
+        return in_array($this->status, [ static::STATUS_FAILED, static::STATUS_FAILED_LIMIT_EXCEEDED ]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function setStatus(int $status)
     {
         $this->status = $status;
@@ -230,6 +249,22 @@ class QueueTask implements QueueTaskInterface
     /**
      * {@inheritdoc}
      */
+    public function getPayloadDataItem(string $key)
+    {
+        return $this->getDataItemFromData($this->payload, $key);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getPayloadDataItemOrThrow(string $key)
+    {
+        return $this->getDataItemFromDataOrThrow($this->payload, $key);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function setPayload(array $payload)
     {
         $this->payload = $payload;
@@ -259,6 +294,22 @@ class QueueTask implements QueueTaskInterface
     public function getResponseError(): array
     {
         return $this->responseError;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getResponseDataItem(string $key)
+    {
+        return $this->getDataItemFromData($this->response, $key);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getResponseDataItemOrThrow(string $key)
+    {
+        return $this->getDataItemFromDataOrThrow($this->response, $key);
     }
 
     /**
