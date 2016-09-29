@@ -80,6 +80,18 @@ interface QueueTaskInterface
     public function setStatus(int $status);
 
     /**
+     * @param int $status One of ::STATUS_*
+     *
+     * @return bool
+     */
+    public function isStatus(int $status): bool;
+
+    /**
+     * @return bool
+     */
+    public function isAnyFailedStatus(): bool;
+
+    /**
      * @return int
      */
     public function getAttempts(): int;
@@ -121,6 +133,18 @@ interface QueueTaskInterface
     public function getPayload(): array;
 
     /**
+     * @param string $key
+     * @return mixed|null
+     */
+    public function getPayloadDataItem(string $key);
+
+    /**
+     * @param string $key
+     * @return mixed
+     */
+    public function getPayloadDataItemOrThrow(string $key);
+
+    /**
      * @param array $payload
      *
      * @return $this
@@ -131,6 +155,18 @@ interface QueueTaskInterface
      * @return array
      */
     public function getResponse(): array;
+
+    /**
+     * @param string $key
+     * @return mixed|null
+     */
+    public function getResponseDataItem(string $key);
+
+    /**
+     * @param string $key
+     * @return mixed
+     */
+    public function getResponseDataItemOrThrow(string $key);
 
     /**
      * @param array $response
