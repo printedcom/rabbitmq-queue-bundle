@@ -204,7 +204,7 @@ Running these consumers is the same as the bundle mentioned: `./bin/console rabb
 
 ### Maintenance
 
-In order to bring down your queue or halt its progress we have the following console commands defined. This will allow for easy maintenace of the queue consumers/workers.
+In order to bring down your queue or halt its progress we have the following console commands defined. This will allow for easy maintenance of the queue consumers/workers.
 
 ```
 queue:maintenance:up
