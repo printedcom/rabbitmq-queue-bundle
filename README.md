@@ -14,10 +14,69 @@ The bundle piggybacks off of the `php-amqplib/rabbitmq-bundle` bundle.
 
 We assume that you are familiar with the `php-amqplib/rabbitmq-bundle` configuration and setup.
 
+### Required configuration parameters
+
+* `rabbitmq-queue-bundle.default_rabbitmq_producer_name` This needs to be the name of the service, that acts as a default producer in RabbitMQ. In other words, you are expected to have at least one producer with the following config:
+```yaml
+producers:
+    default:
+        connection:       default
+        service_alias:    default_rabbitmq_producer
+```
+The value of the `service_alias` should be provided in the `rabbitmq-queue-bundle.default_rabbitmq_producer_name` parameter.
+ 
+### Important notice: Use dedicated EntityManager for your consumers.
+
+Please inject subclasses of AbstractQueueConsumer with dedicated EntityManager, that is not used by the
+rest of your application. This is needed, because AbstractQueueConsumer makes use of that entity manager
+to report errors in the queue tasks entries. It's not possible if the entity manager "Is already closed". 
+
 ## Usage
 
 Assuming you have the configuration done for the previous bundles and running a basic Symfony demo application the steps below should be fairly easy to follow. 
 Small changes can be made where needed but the examples are to help get the point across.
+
+### Example rabbitmq.yml config
+
+```yml
+old_sound_rabbit_mq:
+    connections:
+        default:
+            host: '%rabbitmq_host%'
+            port: '%rabbitmq_port%'
+            user: '%rabbitmq_user%'
+            password: '%rabbitmq_pass%'
+            vhost: '/'
+            lazy: true
+            connection_timeout: 3
+            read_write_timeout: 3
+            keepalive: false
+            
+            # keep this value high, because https://github.com/php-amqplib/RabbitMqBundle/issues/301
+            heartbeat: 3600
+    
+    producers:
+        default:
+            connection:       default
+            service_alias:    default_rabbitmq_producer
+    
+    consumers:
+        upload_picture:
+            connection:       default
+            queue_options:    { name: 'upload-picture' }
+            callback:         upload_picture_service
+            qos_options:      { prefetch_size: 0, prefetch_count: 1, global: false }
+            graceful_max_execution_timeout: 1800
+            graceful_max_execution_timeout_exit_code: 10 
+        
+        render_treasure_map:
+            connection:       default
+            queue_options:    { name: 'render_treasure_map' }
+            callback:         render_treasure_map_service
+            qos_options:      { prefetch_size: 0, prefetch_count: 1, global: false }
+            graceful_max_execution_timeout: 1800
+            graceful_max_execution_timeout_exit_code: 10
+```
 
 ### Monolog
 

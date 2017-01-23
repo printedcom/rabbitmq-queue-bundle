@@ -190,7 +190,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
         $this->logger->info(
             sprintf(
                 'Consumer "%s" %s task "%s" (payload "%s")',
-                $this->task->getExchange(),
+                $this->task->getQueueName(),
                 $redelivered ? 're-attempting' : 'attempting',
                 $this->task->getId(),
                 json_encode($this->task->getPayload())
@@ -274,7 +274,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
                 'The task "%s" exceeded the max attempt limit ("%s") for the consumer "%s"',
                 $this->task->getId(),
                 $this->getAttemptLimit(),
-                $this->task->getExchange()
+                $this->task->getQueueName()
             )
         );
 
@@ -314,7 +314,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
         $this->logger->info(
             sprintf(
                 'Consumer "%s" for task "%s" completed',
-                $this->task->getExchange(),
+                $this->task->getQueueName(),
                 $this->task->getId()
             )
         );
@@ -329,7 +329,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
         $this->logger->error(
             sprintf(
                 'Consumer "%s" for task "%s" failed',
-                $this->task->getExchange(),
+                $this->task->getQueueName(),
                 $this->task->getId()
             )
         );

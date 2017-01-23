@@ -4,10 +4,10 @@ namespace Printed\Bundle\Queue\Service;
 
 use Printed\Bundle\Queue\Entity\QueueTask;
 use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
-use Printed\Bundle\Queue\Exception\MissingQueueException;
 use Printed\Bundle\Queue\Exception\QueuePayloadValidationException;
 use Printed\Bundle\Queue\Queue\AbstractQueuePayload;
 
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -21,26 +21,23 @@ use Psr\Log\LoggerInterface;
  */
 class QueueTaskDispatcher
 {
-
-    /**
-     * @var EntityManager
-     */
+    /** @var EntityManager */
     protected $em;
 
-    /**
-     * @var LoggerInterface
-     */
+    /** @var LoggerInterface */
     protected $logger;
 
-    /**
-     * @var ValidatorInterface
-     */
+    /** @var ValidatorInterface */
     protected $validator;
 
-    /**
-     * @var ContainerInterface
-     */
+    /** @var ContainerInterface */
     protected $container;
+
+    /** @var Uuid */
+    protected $uuidGenerator;
+
+    /** @var ProducerInterface This must be a producer that uses the default RabbitMQ's "(AMQP default)" exchange. */
+    protected $defaultRabbitMqProducer;
 
     /**
      * {@inheritdoc}
@@ -55,6 +52,11 @@ class QueueTaskDispatcher
         $this->logger = $logger;
         $this->validator = $validator;
         $this->container = $container;
+
+        $this->uuidGenerator = $this->container->get('printed.bundle.queue.service.uuid');
+        $this->defaultRabbitMqProducer = $this->container->get(
+            $container->getParameter('rabbitmq-queue-bundle.default_rabbitmq_producer_name')
+        );
     }
 
     /**
@@ -71,22 +73,11 @@ class QueueTaskDispatcher
             throw new QueuePayloadValidationException((string) $errors);
         }
 
-        $service = sprintf('old_sound_rabbit_mq.%s_producer', $payload::getExchangeName());
-        if (!$this->container->has($service)) {
-            throw new MissingQueueException(
-                sprintf(
-                    'The producer "%s" is invalid, tried for service "%s"',
-                    $payload::getExchangeName(),
-                    $service
-                )
-            );
-        }
-
         $task = new QueueTask;
-        $task->setPublicId($this->container->get('printed.bundle.queue.service.uuid')->uuid4());
+        $task->setPublicId($this->uuidGenerator->uuid4());
 
         $task->setStatus(QueueTaskInterface::STATUS_PENDING);
-        $task->setExchange($payload::getExchangeName());
+        $task->setQueueName($payload::getQueueName());
         $task->setAttempts(0);
 
         $task->setPayloadClass(get_class($payload));
@@ -97,14 +88,12 @@ class QueueTaskDispatcher
         $this->em->persist($task);
         $this->em->flush($task);
 
-        /** @var ProducerInterface $service */
-        $service = $this->container->get($service);
-        $service->publish($task->getId());
+        $this->defaultRabbitMqProducer->publish($task->getId(), $payload::getQueueName());
 
         $this->logger->info(
             sprintf(
                 'Dispatched "%s" with task "%s"',
-                $task->getExchange(),
+                $task->getQueueName(),
                 $task->getId()
             )
         );

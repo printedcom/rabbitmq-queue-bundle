@@ -32,9 +32,9 @@ class QueueTask implements QueueTaskInterface
     /**
      * @var string
      *
-     * @ORM\Column(name="exchange", type="string")
+     * @ORM\Column(name="queue_name", type="string")
      */
-    protected $exchange;
+    protected $queueName;
 
     /**
      * @var int
@@ -65,7 +65,7 @@ class QueueTask implements QueueTaskInterface
     protected $payloadClass;
 
     /**
-     * @var string
+     * @var array
      *
      * @ORM\Column(name="payload", type="jsonb")
      */
@@ -137,17 +137,17 @@ class QueueTask implements QueueTaskInterface
     /**
      * {@inheritdoc}
      */
-    public function getExchange(): string
+    public function getQueueName(): string
     {
-        return $this->exchange;
+        return $this->queueName;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function setExchange(string $exchange)
+    public function setQueueName(string $queueName)
     {
-        $this->exchange = $exchange;
+        $this->queueName = $queueName;
         return $this;
     }
 
