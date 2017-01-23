@@ -22,7 +22,7 @@
   "repositories": [
     {
       "type": "git",
-      "url": "https://github.com/d-ph/RabbitMqBundle.git"
+      "url": "https://github.com/printedcom/RabbitMqBundle.git"
     }
   ],
 
