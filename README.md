@@ -50,7 +50,9 @@ old_sound_rabbit_mq:
             lazy: true
             connection_timeout: 3
             read_write_timeout: 3
-            keepalive: false
+            
+            # don't forget, that you should enable tcp keepalive in rabbitmq as well: https://www.rabbitmq.com/networking.html#socket-gen-tcp-options
+            keepalive: true
             
             # keep this value high, because https://github.com/php-amqplib/RabbitMqBundle/issues/301
             heartbeat: 3600
