@@ -24,13 +24,11 @@ abstract class AbstractQueuePayload
     protected $version = 1;
 
     /**
-     * Return the destination exchange.
-     *
-     * Note, this must match the key of the producer/consumer setup in the configuration.
+     * Return the destination queue name.
      *
      * @return string
      */
-    abstract public static function getExchangeName(): string;
+    abstract public static function getQueueName(): string;
 
     /**
      * {@inheritdoc}

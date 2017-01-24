@@ -58,14 +58,14 @@ interface QueueTaskInterface
     /**
      * @return string
      */
-    public function getExchange(): string;
+    public function getQueueName(): string;
 
     /**
-     * @param string $exchange
+     * @param string $queueName
      *
      * @return $this
      */
-    public function setExchange(string $exchange);
+    public function setQueueName(string $queueName);
 
     /**
      * @return int

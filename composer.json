@@ -19,6 +19,13 @@
     }
   },
 
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/printedcom/RabbitMqBundle.git"
+    }
+  ],
+
   "require": {
     "php": ">=7.0",
 
@@ -35,7 +42,7 @@
 
     "monolog/monolog": "~1.11",
 
-    "php-amqplib/rabbitmq-bundle": "~1.6",
+    "php-amqplib/rabbitmq-bundle": "dev-hotfixes",
 
     "ramsey/uuid": "~3.4"
 

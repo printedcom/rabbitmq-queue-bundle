@@ -93,11 +93,11 @@ class MaintenanceWaitForRunningCommand extends Command implements ContainerAware
 
         foreach ($tasks as $task) {
 
-            if (!isset($exchanges[$task->getExchange()])) {
-                $exchanges[$task->getExchange()] = [];
+            if (!isset($exchanges[$task->getQueueName()])) {
+                $exchanges[$task->getQueueName()] = [];
             }
 
-            $exchanges[$task->getExchange()][] = $task->getId();
+            $exchanges[$task->getQueueName()][] = $task->getId();
 
         }
 
