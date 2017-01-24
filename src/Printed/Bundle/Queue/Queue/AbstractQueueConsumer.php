@@ -13,6 +13,7 @@ use Doctrine\ORM\EntityManager;
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use PhpAmqpLib\Message\AMQPMessage;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * An abstract representation of a queue worker (or consumer in RabbitMQ's case).
@@ -38,6 +39,11 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
      * @var EntityManager
      */
     protected $em;
+
+    /**
+     * @var ValidatorInterface
+     */
+    protected $validator;
 
     /**
      * @var QueueTaskRepository
@@ -74,11 +80,13 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
      */
     public function __construct(
         EntityManager $em,
+        ValidatorInterface $validator,
         QueueTaskRepository $repository,
         LoggerInterface $logger,
         ContainerInterface $container
     ) {
         $this->em = $em;
+        $this->validator = $validator;
         $this->repository = $repository;
         $this->logger = $logger;
         $this->container = $container;
@@ -204,6 +212,11 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
         );
 
         try {
+
+            $errors = $this->validator->validate($payload);
+            if ($errors->count()) {
+                throw new QueueFatalErrorException((string) $errors);
+            }
 
             //  Handle the job.
             $status = $this->run($payload);
