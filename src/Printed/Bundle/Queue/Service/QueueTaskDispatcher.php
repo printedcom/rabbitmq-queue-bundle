@@ -40,6 +40,15 @@ class QueueTaskDispatcher
     protected $defaultRabbitMqProducer;
 
     /**
+     * In short: in develop environment use empty string and for environments, that use the same rabbitmq server,
+     * use a queue names prefix to fight name conflicts. Inform this bundle about the prefix using this
+     * configuration variable.
+     *
+     * @var string
+     */
+    protected $queueNamesPrefix;
+
+    /**
      * {@inheritdoc}
      */
     public function __construct(
@@ -57,6 +66,7 @@ class QueueTaskDispatcher
         $this->defaultRabbitMqProducer = $this->container->get(
             $container->getParameter('rabbitmq-queue-bundle.default_rabbitmq_producer_name')
         );
+        $this->queueNamesPrefix = $container->getParameter('rabbitmq-queue-bundle.queue_names_prefix');
     }
 
     /**
@@ -88,7 +98,10 @@ class QueueTaskDispatcher
         $this->em->persist($task);
         $this->em->flush($task);
 
-        $this->defaultRabbitMqProducer->publish($task->getId(), $payload::getQueueName());
+        $this->defaultRabbitMqProducer->publish(
+            $task->getId(),
+            $this->queueNamesPrefix . $payload::getQueueName()
+        );
 
         $this->logger->info(
             sprintf(
