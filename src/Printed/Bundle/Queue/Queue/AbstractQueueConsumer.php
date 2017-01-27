@@ -224,6 +224,11 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
         } catch (QueueFatalErrorException $exception) {
             $status = false;
 
+            //  Log the child exception in the database, if dev provided it.
+            if ($exception->getPrevious()) {
+                $exception = $exception->getPrevious();
+            }
+
             //  Enforce that the limit on the task is maxed, this will prevent the task from running again on the next
             //  iteration, and because we are good we can log this exception against the task record.
             $this->task->setAttempts($this->getAttemptLimit());
