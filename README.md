@@ -16,6 +16,7 @@ We assume that you are familiar with the `php-amqplib/rabbitmq-bundle` configura
 
 ### Required configuration parameters
 
+* `rabbitmq-queue-bundle.queue_names_prefix` Use empty string until you find it useful (case when many deployments use the same rabbitmq server) 
 * `rabbitmq-queue-bundle.default_rabbitmq_producer_name` This needs to be the name of the service, that acts as a default producer in RabbitMQ. In other words, you are expected to have at least one producer with the following config:
 ```yaml
 producers:
