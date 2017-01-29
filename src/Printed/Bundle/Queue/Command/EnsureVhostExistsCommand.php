@@ -43,7 +43,7 @@ class EnsureVhostExistsCommand extends Command implements ContainerAwareInterfac
         $rabbitmqVhost = $this->container->getParameter('rabbitmq-queue-bundle.rabbitmq-vhost');
         $rabbitmqApiBaseUrl = $this->container->getParameter('rabbitmq-queue-bundle.rabbitmq-api-base-url');
 
-        $output->writeln("<info>Ensuring {$rabbitmqUser} can access and manage {$rabbitmqVhost} rabbitmq's vhost.</info>");
+        $output->writeln("<info>Ensuring `{$rabbitmqUser}` can access and manage `{$rabbitmqVhost}` rabbitmq's vhost.</info>");
 
         $this->rabbitmqManagementClient = new RabbitMq\ManagementApi\Client(
             null,
