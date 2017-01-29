@@ -29,8 +29,8 @@ The value of the `service_alias` should be provided in the `rabbitmq-queue-bundl
 * 'rabbitmq-queue-bundle.rabbitmq-user'
 * 'rabbitmq-queue-bundle.rabbitmq-password'
 * 'rabbitmq-queue-bundle.rabbitmq-vhost' E.g. `/`
-* 'rabbitmq-queue-bundle.rabbitmq-api-base-url' E.g. `http://localhost:15672`. This is used required only for commands
- involving calling the rabbit management api.
+* 'rabbitmq-queue-bundle.rabbitmq-api-base-url' E.g. `http://localhost:15672`. This is used only by commands, that
+ call the rabbit management api.
  
 ### Important notice: Use dedicated EntityManager for your consumers.
 
