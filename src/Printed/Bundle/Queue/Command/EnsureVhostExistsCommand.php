@@ -30,6 +30,8 @@ class EnsureVhostExistsCommand extends Command implements ContainerAwareInterfac
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
+        $output->setVerbosity(OutputInterface::VERBOSITY_VERBOSE);
+
         $this->container
             ->get('printed.bundle.queue.service.rabbit_mq_vhost_existence_ensurer')
             ->ensure();
