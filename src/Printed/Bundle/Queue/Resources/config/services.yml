@@ -15,6 +15,16 @@ services:
     arguments:
       - '%kernel.cache_dir%'
 
+  # Vhost existence ensurer.
+  printed.bundle.queue.service.rabbit_mq_vhost_existence_ensurer:
+    class: 'Printed\Bundle\Queue\Service\RabbitMqVhostExistenceEnsurer'
+    arguments:
+      - '@logger'
+      - '%rabbitmq-queue-bundle.rabbitmq_user%'
+      - '%rabbitmq-queue-bundle.rabbitmq_password%'
+      - '%rabbitmq-queue-bundle.rabbitmq_vhost%'
+      - '%rabbitmq-queue-bundle.rabbitmq_api_base_url%'
+
   # UUID service.
   printed.bundle.queue.service.uuid:
     class: 'Ramsey\Uuid\UuidFactory'
