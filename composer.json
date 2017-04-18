@@ -37,6 +37,7 @@
     "symfony/http-kernel": "~3.0",
     "symfony/validator": "~3.0",
 
+    "doctrine/cache": "^1.6",
     "doctrine/doctrine-bundle": "~1.4",
     "doctrine/orm": "~2.5",
 
@@ -47,7 +48,6 @@
     "ramsey/uuid": "~3.4",
     "php-http/guzzle6-adapter": "^1.1",
     "richardfullmer/rabbitmq-management-api": "^2.0"
-
   }
 
 }

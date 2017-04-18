@@ -20,6 +20,11 @@ services:
     arguments:
       - '%kernel.cache_dir%'
 
+  printed.bundle.queue.service.queue_maintenance.cache_queue_maintenance_strategy:
+    class: 'Printed\Bundle\Queue\Service\QueueMaintenance\CacheQueueMaintenanceStrategy'
+    arguments:
+      - "@=service(parameter('rabbitmq-queue-bundle.cache_queue_maintenance_strategy.cache_service_name'))"
+
   # Vhost existence ensurer.
   printed.bundle.queue.service.rabbit_mq_vhost_existence_ensurer:
     class: 'Printed\Bundle\Queue\Service\RabbitMqVhostExistenceEnsurer'
