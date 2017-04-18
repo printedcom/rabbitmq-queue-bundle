@@ -2,50 +2,31 @@
 
 namespace Printed\Bundle\Queue\Service;
 
-use Symfony\Component\Filesystem\Filesystem;
+use Printed\Bundle\Queue\Service\QueueMaintenance\QueueMaintenanceStrategyInterface;
 
 class QueueMaintenance
 {
+    /** @var QueueMaintenanceStrategyInterface */
+    private $queueMaintenanceStrategy;
 
-    /**
-     * @var string
-     */
-    protected $cache;
-
-    /**
-     * @var string
-     */
-    protected $file;
-
-    /**
-     * {@inheritdoc}
-     *
-     * @param string $cache
-     */
-    public function __construct(string $cache)
-    {
-        $this->cache = rtrim($cache);
-        $this->file = sprintf('%s/rabbit-queue.lock', $this->cache);
+    public function __construct(
+        QueueMaintenanceStrategyInterface $queueMaintenanceStrategy
+    ) {
+        $this->queueMaintenanceStrategy = $queueMaintenanceStrategy;
     }
 
-    /**
-     * @return bool
-     */
     public function isEnabled(): bool
     {
-        return file_exists($this->file);
+        return $this->queueMaintenanceStrategy->isEnabled();
     }
 
     public function enable()
     {
-        $fs = new Filesystem();
-        $fs->dumpFile($this->file, time());
+        $this->queueMaintenanceStrategy->enable();
     }
 
     public function disable()
     {
-        $fs = new Filesystem();
-        $fs->remove($this->file);
+        $this->queueMaintenanceStrategy->disable();
     }
-
 }
