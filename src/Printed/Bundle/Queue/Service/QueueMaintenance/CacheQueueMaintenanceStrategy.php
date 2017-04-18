@@ -17,13 +17,18 @@ use Doctrine\Common\Cache\Cache;
  * I (@d-ph) recommend using Doctrine's cache drivers, because they offer cache keys' namespacing
  * out-of-the-box. To set a cache namespace, copy&paste&alter the following:
  *
- *   cache:
+ *   rabbitmq_queue_bundle_cache:
  *     class: Doctrine\Common\Cache\MemcachedCache
  *     calls:
  *       - [ setMemcached, ['@memcached_instance'] ]
- *       - [ setNamespace, ['my_project_%kernel.environment%_%deployment.build_time%'] ]
+ *       - [ setNamespace, ['my_project_%kernel.environment%'] ]
  *
- * When done, provide this service's name via this bundle's configuration.
+ * When done, provide this service's name via this bundle's configuration. WARNING: if you normally
+ * namespace your cache with deployments' build times (or any other value, that uniquely identify
+ * your project's deployments), then you must NOT use the same technique in the cache driver for this
+ * bundle, because you'd run into the same problem FilesystemQueueMaintenanceStrategy suffers from.
+ * E.g. the following namespace is wrong and will silently fail:
+ * 'my_project_%kernel.environment%_%deployment.build_timestamp%'
  *
  * The only reason why this strategy requires an instance of Doctrine\Common\Cache\Cache and not
  * Psr\Cache\CacheItemPoolInterface is because doctrine's cache doesn't implement the psr interface.
