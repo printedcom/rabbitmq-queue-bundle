@@ -13,7 +13,8 @@ services:
   printed.bundle.queue.service.queue_maintenance:
     class: 'Printed\Bundle\Queue\Service\QueueMaintenance'
     arguments:
-      - '%rabbitmq-queue-bundle.queue_maintenance_strategy%'
+      - '@container'
+      - '%rabbitmq-queue-bundle.queue_maintenance_strategy.service_name%'
 
   printed.bundle.queue.service.queue_maintenance.filesystem_queue_maintenance_strategy:
     class: 'Printed\Bundle\Queue\Service\QueueMaintenance\FilesystemQueueMaintenanceStrategy'

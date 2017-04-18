@@ -3,6 +3,7 @@
 namespace Printed\Bundle\Queue\Service;
 
 use Printed\Bundle\Queue\Service\QueueMaintenance\QueueMaintenanceStrategyInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class QueueMaintenance
 {
@@ -10,9 +11,10 @@ class QueueMaintenance
     private $queueMaintenanceStrategy;
 
     public function __construct(
-        QueueMaintenanceStrategyInterface $queueMaintenanceStrategy
+        ContainerInterface $container,
+        string $queueMaintenanceStrategyServiceName
     ) {
-        $this->queueMaintenanceStrategy = $queueMaintenanceStrategy;
+        $this->queueMaintenanceStrategy = $container->get($queueMaintenanceStrategyServiceName);
     }
 
     public function isEnabled(): bool
