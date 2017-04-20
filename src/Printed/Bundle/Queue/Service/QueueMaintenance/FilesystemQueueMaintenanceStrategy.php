@@ -13,7 +13,7 @@ use Symfony\Component\Filesystem\Filesystem;
  * Though simple, this strategy will silently not work in the case, when the maintenance mode is being
  * enabled in a _different_ project directory, than the current workers are running from. This happens
  * when deploying a new version of a project and trying to bring the maintenance mode up from the newly
- * deployed directory instead of the previous one. Since this is such a common case, I, @d-ph, strongly
+ * deployed directory instead of the previous one. Since this is such a common case, I personally strongly
  * discourage anyone from using this strategy. But as one wise man once said: "An opinion is like
  * an ass. Everyone has their own."
  */

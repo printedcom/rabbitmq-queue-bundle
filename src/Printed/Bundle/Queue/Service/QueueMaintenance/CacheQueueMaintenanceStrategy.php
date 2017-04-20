@@ -14,7 +14,7 @@ use Doctrine\Common\Cache\Cache;
  *
  * Caveat 1: if many of your project's environments (e.g. test environments) share one cache solution
  * (i.e. the same cache server), then it's your job to handle cache keys clashes from these environments.
- * I (@d-ph) recommend using Doctrine's cache drivers, because they offer cache keys' namespacing
+ * I personally recommend using Doctrine's cache drivers, because they offer cache keys' namespacing
  * out-of-the-box. To set a cache namespace, copy&paste&alter the following:
  *
  *   rabbitmq_queue_bundle_cache:
