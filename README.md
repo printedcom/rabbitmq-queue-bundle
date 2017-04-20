@@ -16,8 +16,40 @@ We assume that you are familiar with the `php-amqplib/rabbitmq-bundle` configura
 
 ### Required configuration parameters
 
-* `rabbitmq-queue-bundle.queue_names_prefix` Use empty string until you find it useful (case when many deployments use the same rabbitmq server) 
-* `rabbitmq-queue-bundle.default_rabbitmq_producer_name` This needs to be the name of the service, that acts as a default producer in RabbitMQ. In other words, you are expected to have at least one producer with the following config:
+Copy&paste the following to your service container configuration and alter to your setup.
+
+```yaml
+parameters:
+
+  # Name of the service, that acts as a default producer in RabbitMQ
+  rabbitmq-queue-bundle.default_rabbitmq_producer_name: 'default_rabbitmq_producer'
+  
+  # Use empty string. I'll probably remove it at some point. Use RabbitMQ's vhosts instead. 
+  rabbitmq-queue-bundle.queue_names_prefix: ''
+
+  # Name of the service, that implements the queue maintenance mode. Use one of the following:
+  #
+  # 1. 'printed.bundle.queue.service.queue_maintenance.cache_queue_maintenance_strategy' (recommended)
+  # 2. 'printed.bundle.queue.service.queue_maintenance.filesystem_queue_maintenance_strategy'
+  #
+  # To understand the difference, see the comments in the source code.
+  rabbitmq-queue-bundle.queue_maintenance_strategy.service_name: 'printed.bundle.queue.service.queue_maintenance.cache_queue_maintenance_strategy'
+  
+  # Name of a cache service, that implements the requirements outlined in the CacheQueueMaintenanceStrategy
+  rabbitmq-queue-bundle.cache_queue_maintenance_strategy.cache_service_name: 'rabbitmq_queue_bundle_cache'
+
+  rabbitmq-queue-bundle.rabbitmq_user: '%rabbitmq_user%'
+  rabbitmq-queue-bundle.rabbitmq_password: '%rabbitmq_pass%'
+  
+  # Pass '/' if you don't know what rabbtimq vhost is.
+  rabbitmq-queue-bundle.rabbitmq_vhost: '%rabbitmq_vhost%'
+  
+  # This is used only by commands, that call the rabbit management api. You don't need to do 
+  # anything with this key if you don't use those commands.
+  rabbitmq-queue-bundle.rabbitmq_api_base_url: 'http://%rabbitmq_host%:15672'  
+```
+ 
+* `rabbitmq-queue-bundle.default_rabbitmq_producer_name` You are expected to have at least one RabbitMQ producer with the following config:
 ```yaml
 producers:
     default:
@@ -25,12 +57,6 @@ producers:
         service_alias:    default_rabbitmq_producer
 ```
 The value of the `service_alias` should be provided in the `rabbitmq-queue-bundle.default_rabbitmq_producer_name` parameter.
-
-* 'rabbitmq-queue-bundle.rabbitmq_user'
-* 'rabbitmq-queue-bundle.rabbitmq_password'
-* 'rabbitmq-queue-bundle.rabbitmq_vhost' E.g. `/`
-* 'rabbitmq-queue-bundle.rabbitmq_api_base_url' E.g. `http://localhost:15672`. This is used only by commands, that
- call the rabbit management api.
  
 ### Important notice: Use dedicated EntityManager for your consumers.
 
