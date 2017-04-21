@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Fixed
-- Being unable to run queue:maintenance:wait before db migrations.
+- Being unable to run `queue:maintenance:wait` before db migrations.
 
 ## [3.0.0] - 2017-04-20
 ### Added
