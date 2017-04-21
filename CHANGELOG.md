@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Cli command for requeuing tasks. 
 
+### Fixed
+- Being unable to run `queue:maintenance:wait` before db migrations.
+
 ## [3.0.0] - 2017-04-20
 ### Added
 - Queue maintenance mode based on cache solution instead of the filesystem.
