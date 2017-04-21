@@ -4,7 +4,6 @@ namespace Printed\Bundle\Queue\Command;
 
 use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
 
-use Doctrine;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
