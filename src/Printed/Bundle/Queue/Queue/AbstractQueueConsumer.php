@@ -192,7 +192,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
         }
 
         $this->updateTaskRunning();
-        $payload = $this->getPayloadFromTask();
+        $payload = $this->container->get('printed.bundle.queue.helper.queue_task_helper')->getPayload($this->task);
 
         //  Attempting to log enough information to make debugging easy.
         $this->logger->info(
@@ -352,15 +352,6 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
             )
         );
 
-    }
-
-    /**
-     * @return AbstractQueuePayload
-     */
-    private function getPayloadFromTask(): AbstractQueuePayload
-    {
-        $class = $this->task->getPayloadClass();
-        return new $class($this->task->getPayload());
     }
 
 }

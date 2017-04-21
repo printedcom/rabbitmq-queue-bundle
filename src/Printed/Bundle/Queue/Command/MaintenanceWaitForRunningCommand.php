@@ -37,7 +37,6 @@ class MaintenanceWaitForRunningCommand extends Command implements ContainerAware
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $repository = $this->container->get('printed.bundle.queue.repository.queue_task');
         $output->writeln('<info>Monitoring running tasks</info>');
 
         //  Simply notify that maintenance mode is enabled if it is.
@@ -46,16 +45,34 @@ class MaintenanceWaitForRunningCommand extends Command implements ContainerAware
             $output->writeln('<comment>Maintenance mode is enabled</comment>');
         }
 
+        /*
+         * EntityManager can't be used here, because the database is before db migrations at this moment.
+         * DBAL is used instead.
+         */
+        $dbal = $this->container->get('doctrine.dbal.default_connection');
+
+        /*
+         * Exit immediately if the queue tasks db table is not in the database. Assume no workers
+         * are running.
+         */
+        if (!in_array('queue_task', $dbal->getSchemaManager()->listTableNames())) {
+            $output->writeln("<error>Couldn't find the queue tasks table in the database. This is expected, if the bundle is used for the first time. Otherwise it's a critical error you should investigate.</error>");
+            return;
+        }
+
         //  Get the refresh time, this is 3 by default.
         $refresh = (integer) $input->getOption('refresh');
 
         $table = new Table($output);
-        $table->setHeaders(['Exchange', 'Tasks']);
+        $table->setHeaders(['Queue', 'Tasks']);
 
         while (true) {
 
             //  Find all tasks with running status.
-            $tasks = $repository->findBy(['status' => QueueTaskInterface::STATUS_RUNNING]);
+            $tasks = $dbal->fetchAll(
+                'SELECT id, queue_name FROM queue_task WHERE status = :status_running',
+                [ 'status_running' => QueueTaskInterface::STATUS_RUNNING ]
+            );
             $count = count($tasks);
 
             //  If there are none we can exit the command.
@@ -65,7 +82,7 @@ class MaintenanceWaitForRunningCommand extends Command implements ContainerAware
             }
 
             $table->setRows([]);
-            foreach ($this->groupTasksByExchange($tasks) as $exchange => $ids) {
+            foreach ($this->groupTasksByQueue($tasks) as $exchange => $ids) {
                 sort($ids);
                 $table->addRow([$exchange, implode(', ', $ids)]);
             }
@@ -83,21 +100,21 @@ class MaintenanceWaitForRunningCommand extends Command implements ContainerAware
     }
 
     /**
-     * @param QueueTaskInterface[] $tasks
+     * @param array[] $tasks { id: number; queue_name: string; }[]
      *
-     * @return array
+     * @return array { [queueName: string]: number[] }
      */
-    protected function groupTasksByExchange(array $tasks): array
+    protected function groupTasksByQueue(array $tasks): array
     {
         $exchanges = [];
 
         foreach ($tasks as $task) {
 
-            if (!isset($exchanges[$task->getQueueName()])) {
-                $exchanges[$task->getQueueName()] = [];
+            if (!isset($exchanges[$task['queue_name']])) {
+                $exchanges[$task['queue_name']] = [];
             }
 
-            $exchanges[$task->getQueueName()][] = $task->getId();
+            $exchanges[$task['queue_name']][] = $task['id'];
 
         }
 
