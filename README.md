@@ -239,7 +239,8 @@ Running these consumers is the same as the bundle mentioned: `./bin/console rabb
 
 ### Maintenance
 
-In order to bring down your queue or halt its progress we have the following console commands defined. This will allow for easy maintenance of the queue consumers/workers.
+In order to gracefully bring down your queue or halt its progress we have the following console 
+commands defined. This will allow for easy maintenance of the queue consumers/workers.
 
 ```
 queue:maintenance:up
@@ -247,8 +248,15 @@ queue:maintenance:down
 queue:maintenance:wait
 ```
 
-In essence, bring `queue:maintenance:up` will tell the queue to finish its job, then it will exit with code `0`.
-This is helpful if you are running this with something like `supervisord`!
+In essence, `queue:maintenance:up` will prevent any new jobs from being processed by the workers. When
+a new job is being delivered to a worker, while the maintenance mode is up, then the worker will
+immediately exit with code `0`. This is helpful if you are running this with something like `supervisord`,
+because `supervisord` by default doesn't restart programs, that exit with that status. 
+
+It's important to understand, that the primary purpose of `queue:maintenance:up` is to prevent new jobs 
+from being processed. That command is not for stopping/restarting workers (although it effectively happens most of the
+time). Please use different means to ensure, that workers are correctly stopped, e.g. `supervisorctl stop all`
+(use `supervisord`'s program groups if needed).
 
 The `queue:maintenance:wait` will poll the database for running tasks, this command will only exit when none of the tasks are marked as running.
 The `-r` parameter will let you configure the number in seconds it waits to poll the database.
@@ -261,12 +269,16 @@ Essentially you might have a build script looking like this:
 ```
 ./bin/console queue:maintenance:up
 ./bin/console queue:maintenance:wait -q -r 10
+# "supervisorctl stop all"
 
 # deploy code
 # database migrations
 # cache cleaning/warming
 
 ./bin/console queue:maintenance:down
+# "supervisorctl reread"
+# "supervisorctl update"
+# "supervisorctl start all"
 ```
 
 As the tasks are stored in the database with all their payload data it is possible to spawn all the tasks again. This is handy if you need to upgrade or migrate your RabbitMQ instance. At this time we created the command for this (sorry) but it is easy enough to do by replicating the process you do initially to spawn a task but just loop over all the entries in the database marked as `pending` or `status = 1`. See the `QueueTaskInterface` for more information here.
