@@ -30,7 +30,7 @@ class EnsureVhostExistsCommand extends Command implements ContainerAwareInterfac
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        if (!$output->isQuiet() && !$output->isDebug()) {
+        if ($output->getVerbosity() === OutputInterface::VERBOSITY_NORMAL) {
             $output->setVerbosity(OutputInterface::VERBOSITY_VERY_VERBOSE);
         }
 
