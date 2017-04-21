@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Cli command for requeuing tasks. 
 
 ## [3.0.0] - 2017-04-20
 ### Added
