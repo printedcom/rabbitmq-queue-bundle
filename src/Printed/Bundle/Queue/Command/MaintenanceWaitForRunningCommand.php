@@ -2,6 +2,8 @@
 
 namespace Printed\Bundle\Queue\Command;
 
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DriverManager;
 use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
 
 use Symfony\Component\Console\Command\Command;
@@ -50,6 +52,11 @@ class MaintenanceWaitForRunningCommand extends Command implements ContainerAware
          * DBAL is used instead.
          */
         $dbal = $this->container->get('doctrine.dbal.default_connection');
+
+        if (!$this->doesDatabaseExist($dbal)) {
+            $output->writeln("<error>The database doesn't exist. This is expected, if the bundle is used for the first time. Otherwise it's a critical error you should investigate.</error>");
+            return;
+        }
 
         /*
          * Exit immediately if the queue tasks db table is not in the database. Assume no workers
@@ -120,6 +127,41 @@ class MaintenanceWaitForRunningCommand extends Command implements ContainerAware
 
         return $exchanges;
 
+    }
+
+    /**
+     * Does the database exist.
+     *
+     * This is a copy&paste from the `doctrine:database:create` command. Hopefully the following
+     * ticket would be done at some point, allowing me to avoid the duplicated code:
+     *
+     * https://github.com/doctrine/DoctrineBundle/issues/652
+     *
+     * @param Connection $connection
+     * @return bool
+     */
+    private function doesDatabaseExist(Connection $connection): bool
+    {
+        $params = $connection->getParams();
+        if (isset($params['master'])) {
+            $params = $params['master'];
+        }
+
+        $hasPath = isset($params['path']);
+        $name = $hasPath ? $params['path'] : (isset($params['dbname']) ? $params['dbname'] : false);
+        if (!$name) {
+            throw new \InvalidArgumentException("Connection does not contain a 'path' or 'dbname' parameter and cannot be dropped.");
+        }
+        // Need to get rid of _every_ occurrence of dbname from connection configuration and we have already extracted all relevant info from url
+        unset($params['dbname'], $params['path'], $params['url']);
+
+        $tmpConnection = DriverManager::getConnection($params);
+
+        $doesDatabaseExist = in_array($name, $tmpConnection->getSchemaManager()->listDatabases());
+
+        $tmpConnection->close();
+
+        return $doesDatabaseExist;
     }
 
 }
