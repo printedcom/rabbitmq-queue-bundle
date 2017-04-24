@@ -168,7 +168,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
 
         // @codingStandardsIgnoreStart
         $id = $msg->delivery_info['delivery_tag'];
-        $exchange = $msg->delivery_info['exchange'];
+        $queueName = $msg->delivery_info['routing_key'];
         $redelivered = $msg->delivery_info['redelivered'];
         // @codingStandardsIgnoreEnd
 
@@ -180,7 +180,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
         //  We can throw a fit here but no-one will hear it, for now critical log and get out.
         //  Ideally we would email at this point, but there is nothing to email about.
         if (is_null($this->task)) {
-            $this->logger->emergency(sprintf('Invalid task "%s" given to "%s"', $this->message->body, $exchange));
+            $this->logger->emergency(sprintf('Invalid task "%s" given to "%s"', $this->message->body, $queueName));
             //  Instead of using failed we use complete, this prevents the job being re-queued.
             return self::TASK_COMPLETE;
         }
@@ -234,10 +234,6 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
             $this->task->setAttempts($this->getAttemptLimit());
             $this->task->setResponseError(get_class($exception), $exception->getMessage(), $exception->getTrace());
             $this->logger->error($exception->getMessage(), $this->getLoggerContext());
-
-            //  One thing we want to achieve with this exception is for it to gracefully continue to the next task.
-            //  As we are throwing the exception again if its using the same variable name we must unset it here.
-            unset($exception);
 
         } catch (\Throwable $exception) {
             $status = false;

@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [3.1.1] - 2017-04-24
+### Changed
+- Fix `console.exception` listeners unaware of fatal queue exceptions by actually throwing these exceptions.
+The change here is that now consumers will crash instead of continue to the next task
+when QueueFatalErrorException is thrown. This shouldn't be a breaking change, because
+the consumer should be respawned by something like `supervisord`, as per all other
+exceptions.
+
+### Fixed
+- Fix trying to read the exchange name in exchange-less usage.
+- Fix being unable to run `queue:maintenance:wait` before db migrations, part 2.
+
 ## [3.1.0] - 2017-04-21
 ### Added
 - Cli command for requeuing tasks. 
@@ -35,8 +47,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - [Breaking change] Use exchange-less way of using producers and consumers
 
-[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/3.1.0...HEAD
-[3.0.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/3.0.0...3.1.0
+[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/3.1.1...HEAD
+[3.1.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/3.1.0...3.1.1
+[3.1.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/3.0.0...3.1.0
 [3.0.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/2.3.0...3.0.0
 [2.3.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/2.2.0...2.3.0
 [2.2.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/2.1.0...2.2.0
