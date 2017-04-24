@@ -6,7 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Fixed
-- Being unable to run `queue:maintenance:wait` before db migrations, part 2.
+- Fix trying to read the exchange name in exchange-less usage.
+- Fix being unable to run `queue:maintenance:wait` before db migrations, part 2.
 
 ## [3.1.0] - 2017-04-21
 ### Added
