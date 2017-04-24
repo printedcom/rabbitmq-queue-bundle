@@ -2,10 +2,10 @@
 
 namespace Printed\Bundle\Queue\Command;
 
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DriverManager;
 use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
 
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DriverManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
