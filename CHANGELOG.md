@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- Fix trying to read the exchange name in exchange-less usage.
 
 ## [3.1.0] - 2017-04-21
 ### Added
