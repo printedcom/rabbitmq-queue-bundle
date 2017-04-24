@@ -12,6 +12,11 @@ when QueueFatalErrorException is thrown. This shouldn't be a breaking change, be
 the consumer should be respawned by something like `supervisord`, as per all other
 exceptions.
 
+### Fixed
+- Fix trying to read the exchange name in exchange-less usage.
+- Fix being unable to run `queue:maintenance:wait` before db migrations, part 2.
+
+
 ## [3.1.0] - 2017-04-21
 ### Added
 - Cli command for requeuing tasks. 
