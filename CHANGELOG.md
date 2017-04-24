@@ -5,9 +5,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Fix `console.exception` listeners unaware of fatal queue exceptions by actually throwing these exceptions.
+The change here is that now consumers will crash instead of continue to the next task
+when QueueFatalErrorException is thrown. This shouldn't be a breaking change, because
+the consumer should be respawned by something like `supervisord`, as per all other
+exceptions.
+
 ### Fixed
 - Fix trying to read the exchange name in exchange-less usage.
 - Fix being unable to run `queue:maintenance:wait` before db migrations, part 2.
+
 
 ## [3.1.0] - 2017-04-21
 ### Added

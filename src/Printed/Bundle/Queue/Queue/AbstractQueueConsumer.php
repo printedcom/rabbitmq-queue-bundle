@@ -235,10 +235,6 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
             $this->task->setResponseError(get_class($exception), $exception->getMessage(), $exception->getTrace());
             $this->logger->error($exception->getMessage(), $this->getLoggerContext());
 
-            //  One thing we want to achieve with this exception is for it to gracefully continue to the next task.
-            //  As we are throwing the exception again if its using the same variable name we must unset it here.
-            unset($exception);
-
         } catch (\Throwable $exception) {
             $status = false;
 
