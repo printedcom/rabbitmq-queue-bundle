@@ -37,6 +37,15 @@ parameters:
   
   # Name of a cache service, that implements the requirements outlined in the CacheQueueMaintenanceStrategy
   rabbitmq-queue-bundle.cache_queue_maintenance_strategy.cache_service_name: 'rabbitmq_queue_bundle_cache'
+  
+  # Name of the service, that implements the New Deployments Detection feature. Choose one of the following:
+  #
+  # 1. 'printed.bundle.queue.service.new_deployments_detector.noop_strategy' - disables this functionality
+  # 2. 'printed.bundle.queue.service.new_deployments_detector.cache_strategy'
+  rabbitmq-queue-bundle.new_deployments_detector_strategy.service_name: 'printed.bundle.queue.service.new_deployments_detector.noop_strategy'
+  
+  # Exit code used to exit a worker, when it's detected, that it's running old code
+  rabbitmq-queue-bundle.consumer_exit_code.running_using_old_code: 15
 
   rabbitmq-queue-bundle.rabbitmq_user: '%rabbitmq_user%'
   rabbitmq-queue-bundle.rabbitmq_password: '%rabbitmq_pass%'
@@ -237,7 +246,7 @@ A task must always exit with a boolean value, `true` meaning passed and `false` 
 
 Running these consumers is the same as the bundle mentioned: `./bin/console rabbitmq:consumer example_consumer`
 
-### Maintenance
+### Maintenance and deployment
 
 In order to gracefully bring down your queue or halt its progress we have the following console 
 commands defined. This will allow for easy maintenance of the queue consumers/workers.
@@ -255,8 +264,7 @@ because `supervisord` by default doesn't restart programs, that exit with that s
 
 It's important to understand, that the primary purpose of `queue:maintenance:up` is to prevent new jobs 
 from being processed. That command is not for stopping/restarting workers (although it effectively happens most of the
-time). Please use different means to ensure, that workers are correctly stopped, e.g. `supervisorctl stop all`
-(use `supervisord`'s program groups if needed).
+time). Please make use of the New Deployments Detection feature described below to restart the workers.
 
 The `queue:maintenance:wait` will poll the database for running tasks, this command will only exit when none of the tasks are marked as running.
 The `-r` parameter will let you configure the number in seconds it waits to poll the database.
@@ -265,20 +273,27 @@ Also as its a symfony command feel free to quelch the output `-q` in your deploy
 Then of course `queue:maintenance:down` will allow the queues to run again.
 Although you will need to manually restart them as they would have exited.
 
+Before you disable the maintenance mode, you need to make sure all old idle workers are restarted.
+There are many ways of doing it. This bundle provided you with a way for all workers to quit, when
+they detect, that a new deployment has happened. This feature is called "New Deployments Detection"
+and requires you to call the `queue:store-new-deployment-stamp-command` with a string, that can be used
+to compare deployments (timestamp is generally enough). Make sure you configure this bundle to actually
+use this feature.
+
 Essentially you might have a build script looking like this:
 ```
 ./bin/console queue:maintenance:up
 ./bin/console queue:maintenance:wait -q -r 10
-# "supervisorctl stop all"
 
 # deploy code
 # database migrations
 # cache cleaning/warming
 
+./bin/console queue:store-new-deployment-stamp-command `date +%s` 
+
 ./bin/console queue:maintenance:down
 # "supervisorctl reread"
 # "supervisorctl update"
-# "supervisorctl start all"
 ```
 
 As the tasks are stored in the database with all their payload data it is possible to spawn all the tasks again. This is handy if you need to upgrade or migrate your RabbitMQ instance. At this time we created the command for this (sorry) but it is easy enough to do by replicating the process you do initially to spawn a task but just loop over all the entries in the database marked as `pending` or `status = 1`. See the `QueueTaskInterface` for more information here.

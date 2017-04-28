@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- New Deployments Detection feature, which causes workers to exit, if they run code from a previous
+  project deployment
 
 ## [3.1.1] - 2017-04-24
 ### Changed
