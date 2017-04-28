@@ -44,6 +44,9 @@ parameters:
   # 2. 'printed.bundle.queue.service.new_deployments_detector.cache_strategy'
   rabbitmq-queue-bundle.new_deployments_detector_strategy.service_name: 'printed.bundle.queue.service.new_deployments_detector.noop_strategy'
   
+  # Name of a cache service, that implements the requirements outlined in the CacheQueueMaintenanceStrategy
+  rabbitmq-queue-bundle.new_deployments_detector_strategy.cache_service_name: 'rabbitmq_queue_bundle_cache'
+  
   # Exit code used to exit a worker, when it's detected, that it's running old code
   rabbitmq-queue-bundle.consumer_exit_code.running_using_old_code: 15
 
