@@ -5,8 +5,8 @@ namespace Printed\Bundle\Queue\Queue;
 use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
 use Printed\Bundle\Queue\Exception\Consumer\QueueFatalErrorException;
 use Printed\Bundle\Queue\Repository\QueueTaskRepository;
-
 use Printed\Bundle\Queue\Service\NewDeploymentsDetector;
+
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 use Doctrine\ORM\EntityManager;
