@@ -22,10 +22,15 @@ class StoreNewDeploymentStampCommand extends Command implements ContainerAwareIn
      */
     protected function configure()
     {
-        $this->setName('queue:store-new-deployment-stamp-command');
+        $this->setName('queue:store-new-deployment-stamp');
         $this->setDescription("Store a new deployment stamp, so old workers can be told to shut down.");
 
-        $this->addArgument('new-deployment-stamp', InputArgument::REQUIRED, 'New deployment stamp');
+        $this->addArgument(
+            'new-deployment-stamp',
+            InputArgument::OPTIONAL,
+            'New deployment stamp (default: current time)',
+            (new \DateTime())->format('YmdHis')
+        );
     }
 
     /**
