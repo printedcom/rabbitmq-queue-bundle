@@ -25,6 +25,23 @@ services:
     arguments:
       - "@=service(parameter('rabbitmq-queue-bundle.cache_queue_maintenance_strategy.cache_service_name'))"
 
+  # New deployments detector.
+  printed.bundle.queue.service.new_deployments_detector:
+    class: 'Printed\Bundle\Queue\Service\NewDeploymentsDetector'
+    arguments:
+      - "@=container.hasParameter('rabbitmq-queue-bundle.new_deployments_detector_strategy.service_name')
+        ? service(parameter('rabbitmq-queue-bundle.new_deployments_detector_strategy.service_name'))
+        : service('printed.bundle.queue.service.new_deployments_detector.noop_strategy')"
+
+  printed.bundle.queue.service.new_deployments_detector.noop_strategy:
+    class: 'Printed\Bundle\Queue\Service\NewDeploymentsDetector\NoopNewDeploymentsDetectorStrategy'
+    arguments: []
+
+  printed.bundle.queue.service.new_deployments_detector.cache_strategy:
+    class: 'Printed\Bundle\Queue\Service\NewDeploymentsDetector\CacheNewDeploymentsDetectorStrategy'
+    arguments:
+      - "@=service(parameter('rabbitmq-queue-bundle.new_deployments_detector_strategy.cache_service_name'))"
+
   # Vhost existence ensurer.
   printed.bundle.queue.service.rabbit_mq_vhost_existence_ensurer:
     class: 'Printed\Bundle\Queue\Service\RabbitMqVhostExistenceEnsurer'

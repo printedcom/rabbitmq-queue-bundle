@@ -5,6 +5,7 @@ namespace Printed\Bundle\Queue\Queue;
 use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
 use Printed\Bundle\Queue\Exception\Consumer\QueueFatalErrorException;
 use Printed\Bundle\Queue\Repository\QueueTaskRepository;
+use Printed\Bundle\Queue\Service\NewDeploymentsDetector;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -71,6 +72,17 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
     protected $task;
 
     /**
+     * @var NewDeploymentsDetector
+     */
+    private $newDeploymentsDetector;
+
+    /**
+     * @var string
+     * @see NewDeploymentsDetector::getCurrentDeploymentStamp()
+     */
+    private $startUpDeploymentStamp;
+
+    /**
      * {@inheritdoc}
      *
      * @param EntityManager $em
@@ -90,6 +102,9 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
         $this->repository = $repository;
         $this->logger = $logger;
         $this->container = $container;
+
+        $this->newDeploymentsDetector = $this->container->get('printed.bundle.queue.service.new_deployments_detector');
+        $this->startUpDeploymentStamp = $this->newDeploymentsDetector->getCurrentDeploymentStamp();
     }
 
     /**
@@ -161,9 +176,21 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
             $this->logger->debug('Accepting no more work, maintenance mode has been enabled');
 
             //  Exit code 0 will tell supervisor that this script has exited intentionally.
-            //  Too restart this process you need to restart supervisor.
+            //  To restart this process you need to restart supervisor.
             exit(0);
 
+        }
+
+        //  Exit, if there's a newer code deployed
+        if (!$this->newDeploymentsDetector->isDeploymentStampTheCurrentOne($this->startUpDeploymentStamp)) {
+            $this->logger->debug("The consumer exits, because it's running using an old code.");
+
+            $exitCodeParameterName = 'rabbitmq-queue-bundle.consumer_exit_code.running_using_old_code';
+            exit(
+                $this->container->hasParameter($exitCodeParameterName)
+                    ? $this->container->getParameter($exitCodeParameterName)
+                    : 20
+            );
         }
 
         // @codingStandardsIgnoreStart

@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [3.2.0] - 2017-05-02
+### Added
+- New Deployments Detection feature, which causes workers to exit, if they run code from a previous
+  project deployment
+
 ## [3.1.1] - 2017-04-24
 ### Changed
 - Fix `console.exception` listeners unaware of fatal queue exceptions by actually throwing these exceptions.
@@ -47,7 +52,8 @@ exceptions.
 ### Changed
 - [Breaking change] Use exchange-less way of using producers and consumers
 
-[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/3.1.1...HEAD
+[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/3.2.0...HEAD
+[3.2.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/3.1.1...3.2.0
 [3.1.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/3.1.0...3.1.1
 [3.1.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/3.0.0...3.1.0
 [3.0.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/2.3.0...3.0.0

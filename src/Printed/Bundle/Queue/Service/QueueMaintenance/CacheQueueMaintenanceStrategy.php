@@ -30,6 +30,9 @@ use Doctrine\Common\Cache\Cache;
  * E.g. the following namespace is wrong and will silently fail:
  * 'my_project_%kernel.environment%_%deployment.build_timestamp%'
  *
+ * It's best to namespace the cache driver with the vhost of the deployment (the same idea as Rabbitmq's
+ * vhosts).
+ *
  * The only reason why this strategy requires an instance of Doctrine\Common\Cache\Cache and not
  * Psr\Cache\CacheItemPoolInterface is because doctrine's cache doesn't implement the psr interface.
  * This would make my recommended way for solving caveat 1 not work.
