@@ -394,7 +394,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
             && $this->container->getParameter($containerParameterName)
         ) {
             /** @var EntityManagerInterface $applicationEntityManager */
-            $applicationEntityManager = $this->container->get($this->container->getParameter($containerParameterName))
+            $applicationEntityManager = $this->container->get($this->container->getParameter($containerParameterName));
 
             $applicationEntityManager->clear();
         }
