@@ -10,6 +10,7 @@ use Printed\Bundle\Queue\Service\NewDeploymentsDetector;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -193,6 +194,8 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
             );
         }
 
+        $this->clearKnownEntityManagers();
+
         // @codingStandardsIgnoreStart
         $id = $msg->delivery_info['delivery_tag'];
         $queueName = $msg->delivery_info['routing_key'];
@@ -375,6 +378,26 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
             )
         );
 
+    }
+
+    /**
+     * Clear all known entity managers, so entities are not cached between consumers' runs.
+     */
+    private function clearKnownEntityManagers()
+    {
+        $this->em->clear();
+
+        //  Clear the application's doctrine entity manager, if defined.
+        $containerParameterName = 'rabbitmq-queue-bundle.application_doctrine_entity_manager.service_name';
+        if (
+            $this->container->hasParameter($containerParameterName)
+            && $this->container->getParameter($containerParameterName)
+        ) {
+            /** @var EntityManagerInterface $applicationEntityManager */
+            $applicationEntityManager = $this->container->get($this->container->getParameter($containerParameterName))
+
+            $applicationEntityManager->clear();
+        }
     }
 
 }
