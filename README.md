@@ -26,6 +26,11 @@ parameters:
   
   # Use empty string. I'll probably remove it at some point. Use RabbitMQ's vhosts instead. 
   rabbitmq-queue-bundle.queue_names_prefix: ''
+  
+  # Doctrine's EntityManager needs to be cleared between consumers' runs. `AbstractQueueConsumer`
+  # clears its own EntityManager, but if you have a separate EntityManager for your application
+  # as well, then put the name of the service, that points to that EntityManager here.
+  rabbitmq-queue-bundle.application_doctrine_entity_manager.service_name: ~
 
   # Name of the service, that implements the queue maintenance mode. Use one of the following:
   #
