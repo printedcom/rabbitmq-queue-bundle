@@ -6,6 +6,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [4.0.0] - 2017-06-16
+### Changed
+- Update "php-amqplib/rabbitmq-bundle" dependency. Don't use printedcom's fork anymore.
+  To fix the breaking change, please change:
+```yml
+graceful_max_execution_timeout: 1800
+graceful_max_execution_timeout_exit_code: 10
+```
+to
+```yml
+graceful_max_execution:
+    timeout: 1800
+    exit_code: 10
+```
+in your consumers' configuration for the rabbitmq bundle, if you were using this feature. 
+
 ## [3.2.1] - 2017-05-12
 ### Fixed
 - Fix doctrine entities being cached between consumers' runs by clearing the entity manager before
@@ -57,7 +73,8 @@ exceptions.
 ### Changed
 - [Breaking change] Use exchange-less way of using producers and consumers
 
-[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/3.2.1...HEAD
+[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.0.0...HEAD
+[4.0.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/3.2.1...4.0.0
 [3.2.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/3.2.0...3.2.1
 [3.2.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/3.1.1...3.2.0
 [3.1.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/3.1.0...3.1.1
