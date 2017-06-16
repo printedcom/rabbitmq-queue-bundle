@@ -5,6 +5,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Update "php-amqplib/rabbitmq-bundle" dependency. Don't use printedcom's fork anymore.
+  To fix the breaking change, please change:
+```yml
+graceful_max_execution_timeout: 1800
+graceful_max_execution_timeout_exit_code: 10
+```
+to
+```yml
+graceful_max_execution:
+    timeout: 1800
+    exit_code: 10
+```
+in your consumers' configuration for the rabbitmq bundle, if you were using this feature. 
 
 ## [3.2.1] - 2017-05-12
 ### Fixed
