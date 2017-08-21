@@ -40,7 +40,8 @@
 
     "ramsey/uuid": "~3.4",
     "php-http/guzzle6-adapter": "^1.1",
-    "richardfullmer/rabbitmq-management-api": "^2.0"
+    "richardfullmer/rabbitmq-management-api": "^2.0",
+    "psr/log": "^1.0"
   }
 
 }

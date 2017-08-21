@@ -14,6 +14,20 @@ The bundle piggybacks off of the `php-amqplib/rabbitmq-bundle` bundle.
 
 We assume that you are familiar with the `php-amqplib/rabbitmq-bundle` configuration and setup.
 
+### Special note for memcached users
+Please open `vendor/doctrine/cache/lib/Doctrine/Common/Cache/MemcachedCache.php` file
+in your project and see whether you can find the following piece of code:
+```php
+protected function doContains($id)
+{
+    return false !== $this->memcached->get($id)
+        || $this->memcached->getResultCode() !== Memcached::RES_NOTFOUND;
+}
+```
+If you do, then consider upgrading `doctrine/cache` version to at least `1.7.0`, otherwise
+`CacheQueueMaintenanceStrategy` might be saying, that the maintenance mode is up, when
+there was any connection issues to your memcached server. 
+
 ### Required configuration parameters
 
 Copy&paste the following to your service container configuration and alter to your setup.
@@ -113,21 +127,19 @@ old_sound_rabbit_mq:
             service_alias:    default_rabbitmq_producer
     
     consumers:
-        upload_picture:
+        upload_picture: &consumer_template
             connection:       default
             queue_options:    { name: 'upload-picture' }
             callback:         upload_picture_service
             qos_options:      { prefetch_size: 0, prefetch_count: 1, global: false }
-            graceful_max_execution_timeout: 1800
-            graceful_max_execution_timeout_exit_code: 10 
+            graceful_max_execution:
+                timeout: 1800
+                exit_code: 10
         
         render_treasure_map:
-            connection:       default
+            <<: *consumer_template
             queue_options:    { name: 'render_treasure_map' }
             callback:         render_treasure_map_service
-            qos_options:      { prefetch_size: 0, prefetch_count: 1, global: false }
-            graceful_max_execution_timeout: 1800
-            graceful_max_execution_timeout_exit_code: 10
 ```
 
 ### Monolog
