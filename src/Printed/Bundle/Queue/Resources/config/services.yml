@@ -24,6 +24,7 @@ services:
     class: 'Printed\Bundle\Queue\Service\QueueMaintenance\CacheQueueMaintenanceStrategy'
     arguments:
       - "@=service(parameter('rabbitmq-queue-bundle.cache_queue_maintenance_strategy.cache_service_name'))"
+      - "@logger"
 
   # New deployments detector.
   printed.bundle.queue.service.new_deployments_detector:
@@ -41,6 +42,7 @@ services:
     class: 'Printed\Bundle\Queue\Service\NewDeploymentsDetector\CacheNewDeploymentsDetectorStrategy'
     arguments:
       - "@=service(parameter('rabbitmq-queue-bundle.new_deployments_detector_strategy.cache_service_name'))"
+      - "@logger"
 
   # Vhost existence ensurer.
   printed.bundle.queue.service.rabbit_mq_vhost_existence_ensurer:
