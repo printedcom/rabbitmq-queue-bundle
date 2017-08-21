@@ -26,7 +26,7 @@ protected function doContains($id)
 ```
 If you do, then consider upgrading `doctrine/cache` version to at least `1.7.0`, otherwise
 `CacheQueueMaintenanceStrategy` might be saying, that the maintenance mode is up, when
-there was connection issues to your memcached server. 
+there was any connection issues to your memcached server. 
 
 ### Required configuration parameters
 
