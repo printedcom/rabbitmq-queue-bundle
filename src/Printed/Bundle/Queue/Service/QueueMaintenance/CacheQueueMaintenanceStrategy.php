@@ -3,6 +3,7 @@
 namespace Printed\Bundle\Queue\Service\QueueMaintenance;
 
 use Doctrine\Common\Cache\Cache;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class CacheQueueMaintenanceStrategy
@@ -44,9 +45,15 @@ class CacheQueueMaintenanceStrategy implements QueueMaintenanceStrategyInterface
     /** @var Cache */
     private $cache;
 
-    public function __construct(Cache $cache)
-    {
+    /** @var LoggerInterface */
+    private $logger;
+
+    public function __construct(
+        Cache $cache,
+        LoggerInterface $logger
+    ) {
         $this->cache = $cache;
+        $this->logger = $logger;
     }
 
     /**
@@ -62,7 +69,17 @@ class CacheQueueMaintenanceStrategy implements QueueMaintenanceStrategyInterface
      */
     public function enable()
     {
-        $this->cache->save(static::CACHE_KEY, time());
+        $result = $this->cache->save(static::CACHE_KEY, time());
+
+        if ($result) {
+            return;
+        }
+
+        throw new \RuntimeException(join(' ', [
+            "Couldn't enable queue maintenance mode, because saving the maintenance marker in",
+            'cache server failed for unknown reason. Please check, whether the cache server is running',
+            'and whether your cache configuration is correct.',
+        ]));
     }
 
     /**
@@ -70,6 +87,22 @@ class CacheQueueMaintenanceStrategy implements QueueMaintenanceStrategyInterface
      */
     public function disable()
     {
-        $this->cache->delete(static::CACHE_KEY);
+        $result = $this->cache->delete(static::CACHE_KEY);
+
+        if ($result) {
+            return;
+        }
+
+        /*
+         * This method can't throw exceptions, because this would potentially abort a build process
+         * after database migrations are already run. Logging an error message is the only safe
+         * thing I can do here. At least it allows deployers to see in the build logs, that there
+         * was an issue.
+         */
+        $this->logger->error(join(' ', [
+            "Couldn't disable queue maintenance mode, because removing the maintenance marker in",
+            'cache server failed for unknown reason. Please check, whether the cache server is running',
+            'and whether your cache configuration is correct.',
+        ]));
     }
 }

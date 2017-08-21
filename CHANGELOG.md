@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Check and react on failures when reading/setting stuff in the cache.
 
 ## [4.0.0] - 2017-06-16
 ### Changed

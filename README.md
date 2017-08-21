@@ -14,6 +14,20 @@ The bundle piggybacks off of the `php-amqplib/rabbitmq-bundle` bundle.
 
 We assume that you are familiar with the `php-amqplib/rabbitmq-bundle` configuration and setup.
 
+### Special note for memcached users
+Please open `vendor/doctrine/cache/lib/Doctrine/Common/Cache/MemcachedCache.php` file
+in your project and see whether you can find the following piece of code:
+```php
+protected function doContains($id)
+{
+    return false !== $this->memcached->get($id)
+        || $this->memcached->getResultCode() !== Memcached::RES_NOTFOUND;
+}
+```
+If you do, then consider upgrading `doctrine/cache` version to at least `1.7.0`, otherwise
+`CacheQueueMaintenanceStrategy` might be saying, that the maintenance mode is up, when
+there was connection issues to your memcached server. 
+
 ### Required configuration parameters
 
 Copy&paste the following to your service container configuration and alter to your setup.
