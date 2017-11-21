@@ -28,7 +28,7 @@ class QueueTask implements QueueTaskInterface
     /**
      * @var string
      *
-     * @ORM\Column(name="id_public", type="string", length=50)
+     * @ORM\Column(name="id_public", type="string", length=50, unique=true)
      */
     protected $publicId = null;
 
@@ -143,6 +143,15 @@ class QueueTask implements QueueTaskInterface
     public function getQueueName(): string
     {
         return $this->queueName;
+    }
+
+    public function assertQueueName(string $queueName)
+    {
+        if ($this->queueName === $queueName) {
+            return;
+        }
+
+        throw new \RuntimeException("Failed to assert, that queue task `{$this->id}` is for queue `{$queueName}`.");
     }
 
     /**

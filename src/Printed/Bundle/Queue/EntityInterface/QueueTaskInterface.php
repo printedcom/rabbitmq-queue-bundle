@@ -7,32 +7,19 @@ namespace Printed\Bundle\Queue\EntityInterface;
  */
 interface QueueTaskInterface
 {
-
-    /**
-     * The task is pending execution and should be sitting in the queue already.
-     */
+    /** @deprecated Use QueueTaskStatus instead. */
     const STATUS_PENDING = 1;
 
-    /**
-     * The task being run on a worker.
-     */
+    /** @deprecated Use QueueTaskStatus instead. */
     const STATUS_RUNNING = 2;
 
-    /**
-     * The task returned a successful response.
-     */
+    /** @deprecated Use QueueTaskStatus instead. */
     const STATUS_COMPLETE = 3;
 
-    /**
-     * The task returned a failed response or an exception was caught.
-     * There may be data within the response error field.
-     */
+    /** @deprecated Use QueueTaskStatus instead. */
     const STATUS_FAILED = 4;
 
-    /**
-     * The task failed more than the allowed amount of times.
-     * There may be data within the response error field but it will be historical.
-     */
+    /** @deprecated Use QueueTaskStatus instead. */
     const STATUS_FAILED_LIMIT_EXCEEDED = 5;
 
     /**
