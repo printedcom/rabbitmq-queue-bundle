@@ -13,7 +13,6 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class QueueTask implements QueueTaskInterface
 {
-
     use GetDataItemFromDataOrThrowTrait;
 
     /**
@@ -52,6 +51,13 @@ class QueueTask implements QueueTaskInterface
      * @ORM\Column(name="attempts", type="integer")
      */
     protected $attempts;
+
+    /**
+     * @var int 0 ~ 100
+     *
+     * @ORM\Column(name="completion_percentage", type="integer")
+     */
+    protected $completionPercentage = 0;
 
     /**
      * @var int|null
@@ -210,6 +216,28 @@ class QueueTask implements QueueTaskInterface
     public function setAttempts(int $attempts)
     {
         $this->attempts = $attempts;
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCompletionPercentage(): int
+    {
+        return $this->completionPercentage;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setCompletionPercentage(int $completionPercentage)
+    {
+        if ($completionPercentage < 0 || $completionPercentage > 100) {
+            throw new \LogicException("Queue task's completion percentage must be between 0 and 100. Given: `{$completionPercentage}`");
+        }
+
+        $this->completionPercentage = $completionPercentage;
+
         return $this;
     }
 

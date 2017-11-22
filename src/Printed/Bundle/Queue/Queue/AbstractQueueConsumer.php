@@ -301,6 +301,32 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
     }
 
     /**
+     * Run this from your consumer to update the task's completion percentage without flushing
+     * anything else into database.
+     *
+     * @param int $completionPercentage
+     */
+    protected function setTaskCompletionPercentage(int $completionPercentage)
+    {
+        $this->task->setCompletionPercentage($completionPercentage);
+
+        $taskClassName = get_class($this->task);
+
+        $query = $this->em->createQuery("
+            UPDATE {$taskClassName} t 
+            SET t.completion_percentage = :completionPercentage
+            WHERE t.id = :taskId
+        ");
+
+        $query->setParameters([
+            'completionPercentage' => $completionPercentage,
+            'taskId' => $this->task->getId(),
+        ]);
+
+        $query->getResult();
+    }
+
+    /**
      * Check the task has attempts left, return true to remove the job.
      *
      * @return bool
@@ -338,6 +364,9 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
         //  Increment the task attempts count.
         $this->task->setAttempts($this->task->getAttempts() + 1);
 
+        //  Reset completion percentage in case this task is being retried.
+        $this->task->setCompletionPercentage(0);
+
         //  Store the process ID so we can target failing workers in debug.
         $this->task->setProcessId(getmypid());
 
@@ -353,6 +382,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
     private function updateTaskComplete()
     {
         $this->task->setStatus(QueueTaskInterface::STATUS_COMPLETE);
+        $this->task->setCompletionPercentage(100);
         $this->task->setCompletedDate(new \DateTime);
 
         $this->logger->info(

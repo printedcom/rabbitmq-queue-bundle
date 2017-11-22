@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- A way to express tasks' completion progress (percentage) during consumer's run.
 - A way to dispatch tasks on next doctrine flush event. This is helpful to fight race condition
   between database's flush and rabbitmq's consumer start
 - A couple of very dedicated methods to QueueTaskRepository for retrieving queue tasks by
@@ -13,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   
 ### Changed
 - **[DATABASE MIGRATION NEEDED]** Add unique db index on `queue_task.id_public`.
+- **[DATABASE MIGRATION NEEDED]** Add db column `queue_task.completion_percentage`.
 
 ## [4.0.1] - 2017-08-21
 ### Changed

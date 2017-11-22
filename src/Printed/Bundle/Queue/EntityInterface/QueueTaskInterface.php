@@ -91,6 +91,18 @@ interface QueueTaskInterface
     public function setAttempts(int $attempts);
 
     /**
+     * @return int
+     */
+    public function getCompletionPercentage(): int;
+
+    /**
+     * @param int $completionPercentage
+     *
+     * @return $this
+     */
+    public function setCompletionPercentage(int $completionPercentage);
+
+    /**
      * @return int|null
      */
     public function getProcessId();
