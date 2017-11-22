@@ -49,6 +49,12 @@ interface QueueTaskInterface
 
     /**
      * @param string $queueName
+     * @throws \RuntimeException
+     */
+    public function assertQueueName(string $queueName);
+
+    /**
+     * @param string $queueName
      *
      * @return $this
      */
