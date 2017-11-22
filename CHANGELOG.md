@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- A way to cancel tasks.
 - A way to express tasks' completion progress (percentage) during consumer's run.
 - A way to dispatch tasks on next doctrine flush event. This is helpful to fight race condition
   between database's flush and rabbitmq's consumer start
@@ -15,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - **[DATABASE MIGRATION NEEDED]** Add unique db index on `queue_task.id_public`.
 - **[DATABASE MIGRATION NEEDED]** Add db column `queue_task.completion_percentage`.
+- **[DATABASE MIGRATION NEEDED]** Add db column `queue_task.cancellation_requested`.
 
 ## [4.0.1] - 2017-08-21
 ### Changed

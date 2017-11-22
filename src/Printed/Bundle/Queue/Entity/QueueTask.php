@@ -60,6 +60,15 @@ class QueueTask implements QueueTaskInterface
     protected $completionPercentage = 0;
 
     /**
+     * @var bool Task cancellation is graceful for the consumers, that's why you should
+     *  expect to see tasks, that have been run to their completion, even though
+     *  a cancellation has been requested.
+     *
+     * @ORM\Column(name="cancellation_requested", type="boolean")
+     */
+    protected $cancellationRequested = false;
+
+    /**
      * @var int|null
      *
      * @ORM\Column(name="process_id", type="integer", nullable=true)
@@ -238,6 +247,23 @@ class QueueTask implements QueueTaskInterface
 
         $this->completionPercentage = $completionPercentage;
 
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isCancellationRequested(): bool
+    {
+        return $this->cancellationRequested;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setCancellationRequested(bool $cancellationRequested)
+    {
+        $this->cancellationRequested = $cancellationRequested;
         return $this;
     }
 

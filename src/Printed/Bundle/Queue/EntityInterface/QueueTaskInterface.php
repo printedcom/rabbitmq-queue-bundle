@@ -103,6 +103,18 @@ interface QueueTaskInterface
     public function setCompletionPercentage(int $completionPercentage);
 
     /**
+     * @return bool
+     */
+    public function isCancellationRequested(): bool;
+
+    /**
+     * @param bool $cancellationRequested
+     *
+     * @return $this
+     */
+    public function setCancellationRequested(bool $cancellationRequested);
+
+    /**
      * @return int|null
      */
     public function getProcessId();

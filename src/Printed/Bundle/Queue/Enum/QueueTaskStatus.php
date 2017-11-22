@@ -33,6 +33,12 @@ class QueueTaskStatus
      */
     const FAILED_LIMIT_EXCEEDED = QueueTaskInterface::STATUS_FAILED_LIMIT_EXCEEDED;
 
+    /**
+     * The task has been cancelled either before it started of during its runtime. Bear in
+     * mind, that consumers are in full control, whether they want to cancel themselves or not.
+     */
+    const CANCELLED = 6;
+
     public static function getUnsettledStatuses(): array
     {
         return [
@@ -47,6 +53,7 @@ class QueueTaskStatus
         return [
             self::COMPLETE,
             self::FAILED_LIMIT_EXCEEDED,
+            self::CANCELLED,
         ];
     }
 }

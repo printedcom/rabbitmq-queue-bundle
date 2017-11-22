@@ -92,7 +92,7 @@ class QueueTaskRepository extends EntityRepository
      *
      * Learn more about the payload criteria by reading the ::findUnsettled() docblock.
      *
-     * @param array $taskPublicIds
+     * @param string[] $taskPublicIds
      * @param string|null $queueName
      * @param array $queueTaskPayloadCriteria
      * @return QueueTaskInterface[]
