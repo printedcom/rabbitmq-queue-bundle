@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- A way to dispatch tasks on next doctrine flush event. This is helpful to fight race condition
+  between database's flush and rabbitmq's consumer start
 - A couple of very dedicated methods to QueueTaskRepository for retrieving queue tasks by
   public id, status, queue name and payload content.
   

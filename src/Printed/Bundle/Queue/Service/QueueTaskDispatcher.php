@@ -7,6 +7,7 @@ use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
 use Printed\Bundle\Queue\Exception\QueuePayloadValidationException;
 use Printed\Bundle\Queue\Queue\AbstractQueuePayload;
 
+use Printed\Bundle\Queue\ValueObject\ScheduledQueueTask;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -44,9 +45,19 @@ class QueueTaskDispatcher
      * use a queue names prefix to fight name conflicts. Inform this bundle about the prefix using this
      * configuration variable.
      *
+     * @deprecated Use rabbitmq vhost functionality to fight queue names' conflicts.
+     *
      * @var string
      */
     protected $queueNamesPrefix;
+
+    /**
+     * @var array Of structure { [queuePayloadSplObjectHash: string]: ScheduledQueueTask; }
+     */
+    protected $payloadsDelayedUntilNextDoctrineFlush;
+
+    /** @var bool Used to prevent dispatching the on-doctrine-flush payloads recursively */
+    private $dispatchingOnDoctrineFlushPayloads;
 
     /**
      * {@inheritdoc}
@@ -61,6 +72,8 @@ class QueueTaskDispatcher
         $this->logger = $logger;
         $this->validator = $validator;
         $this->container = $container;
+        $this->payloadsDelayedUntilNextDoctrineFlush = [];
+        $this->dispatchingOnDoctrineFlushPayloads = false;
 
         $this->uuidGenerator = $this->container->get('printed.bundle.queue.service.uuid');
         $this->defaultRabbitMqProducer = $this->container->get(
@@ -72,15 +85,20 @@ class QueueTaskDispatcher
     /**
      * @param AbstractQueuePayload $payload
      *
+     * @param array $options
      * @return QueueTaskInterface
      */
-    public function dispatch(AbstractQueuePayload $payload): QueueTaskInterface
+    public function dispatch(AbstractQueuePayload $payload, array $options = []): QueueTaskInterface
     {
+        $options = array_merge([
+            /*
+             * Set this to false, if the payload is already validated.
+             */
+            'validatePayload' => true,
+        ], $options);
 
-        //  Validate the payload is good to serialise.
-        $errors = $this->validator->validate($payload);
-        if ($errors->count()) {
-            throw new QueuePayloadValidationException((string) $errors);
+        if ($options['validatePayload']) {
+            $this->throwIfPayloadInvalid($payload);
         }
 
         $task = new QueueTask;
@@ -115,4 +133,75 @@ class QueueTaskDispatcher
 
     }
 
+    /**
+     * Dispatch the payload, but only after the soonest Doctrine flush.
+     *
+     * This is helpful, when you need to make sure the consumer doesn't start before your app
+     * flushes some relevant changes to the database.
+     *
+     * It's also the only safe way to dispatch queue tasks from some of the doctrine listeners
+     * (e.g. postUpdate) in your app.
+     *
+     * @param AbstractQueuePayload $payload
+     *
+     * @return ScheduledQueueTask
+     */
+    public function dispatchAfterNextEntityManagerFlush(AbstractQueuePayload $payload): ScheduledQueueTask
+    {
+        $existingScheduledQueueTask = $this->payloadsDelayedUntilNextDoctrineFlush[spl_object_hash($payload)]
+            ?? null;
+
+        /*
+         * Do not schedule duplicate payloads.
+         */
+        if ($existingScheduledQueueTask) {
+            return $existingScheduledQueueTask;
+        }
+
+        $this->throwIfPayloadInvalid($payload);
+
+        $scheduledQueueTask = new ScheduledQueueTask($payload);
+        $this->payloadsDelayedUntilNextDoctrineFlush[spl_object_hash($payload)] = $scheduledQueueTask;
+
+        return $scheduledQueueTask;
+    }
+
+    /**
+     * @internal Don't use this method.
+     */
+    public function dispatchOnDoctrineFlushPayloads()
+    {
+        if (
+            !$this->payloadsDelayedUntilNextDoctrineFlush
+            || $this->dispatchingOnDoctrineFlushPayloads
+        ) {
+            return;
+        }
+
+        $this->dispatchingOnDoctrineFlushPayloads = true;
+
+        foreach ($this->payloadsDelayedUntilNextDoctrineFlush as $scheduledQueueTask) {
+            /** @var ScheduledQueueTask $scheduledQueueTask */
+
+            $queueTask = $this->dispatch(
+                $scheduledQueueTask->getPayload(),
+                ['validatePayload' => false]
+            );
+
+            $scheduledQueueTask->setQueueTask($queueTask);
+        }
+
+        $this->payloadsDelayedUntilNextDoctrineFlush = [];
+
+        $this->dispatchingOnDoctrineFlushPayloads = false;
+    }
+
+    private function throwIfPayloadInvalid(AbstractQueuePayload $payload)
+    {
+        $errors = $this->validator->validate($payload);
+
+        if ($errors->count()) {
+            throw new QueuePayloadValidationException((string) $errors);
+        }
+    }
 }
