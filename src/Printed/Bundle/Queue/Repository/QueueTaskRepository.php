@@ -8,6 +8,7 @@ use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
 use Doctrine\ORM\EntityRepository;
 use Printed\Bundle\Queue\Enum\QueueTaskStatus;
 use Printed\Bundle\Queue\Exception\CouldNotFindAllRequestedQueueTasksException;
+use Printed\Bundle\Queue\Queue\AbstractQueuePayload;
 
 /**
  * @method QueueTaskInterface find($id, $lockMode = null, $lockVersion = null)
@@ -151,6 +152,34 @@ class QueueTaskRepository extends EntityRepository
         }
 
         return $result;
+    }
+
+    /**
+     * Best effort way to find out, whether there are a queue tasks, created by a given payload, that
+     * are already in the database (i.e. that are already dispatched).
+     *
+     * @param AbstractQueuePayload $payload
+     * @param string|null $queueTaskStatus
+     * @return QueueTaskInterface[]
+     */
+    public function findByQueuePayload(AbstractQueuePayload $payload, string $queueTaskStatus = null)
+    {
+        $searchCriteria = [
+            'queueName' => $payload->getQueueName(),
+            'payloadClass' => get_class($payload),
+            /*
+             * This is, where the "best effort" stems from.
+             */
+            'payload' => $payload->getProperties(),
+        ];
+
+        if ($queueTaskStatus) {
+            $searchCriteria['status'] = $queueTaskStatus;
+        }
+
+        $results = $this->findBy($searchCriteria);
+
+        return $results;
     }
 
     private function assertDatabaseIsPostgres()
