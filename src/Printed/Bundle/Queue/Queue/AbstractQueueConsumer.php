@@ -343,7 +343,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
 
         $query = $this->em->createQuery("
             UPDATE {$taskClassName} t 
-            SET t.completion_percentage = :completionPercentage
+            SET t.completionPercentage = :completionPercentage
             WHERE t.id = :taskId
         ");
 
