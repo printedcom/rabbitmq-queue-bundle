@@ -1,0 +1,9 @@
+services:
+
+  printed.bundle.queue.listener.dispatch_delayed_queue_tasks_event_listener:
+      class: Printed\Bundle\Queue\Event\DispatchDelayedQueueTasksEventListener
+      public: false
+      arguments:
+        - '@printed.bundle.queue.service.queue_task_dispatcher'
+      tags:
+        - { name: doctrine.event_listener, entity_manager: default, event: postFlush }

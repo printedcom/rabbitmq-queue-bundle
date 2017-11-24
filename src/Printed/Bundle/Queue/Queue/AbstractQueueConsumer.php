@@ -3,7 +3,9 @@
 namespace Printed\Bundle\Queue\Queue;
 
 use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
+use Printed\Bundle\Queue\Enum\QueueTaskStatus;
 use Printed\Bundle\Queue\Exception\Consumer\QueueFatalErrorException;
+use Printed\Bundle\Queue\Exception\QueueTaskCancellationException;
 use Printed\Bundle\Queue\Repository\QueueTaskRepository;
 use Printed\Bundle\Queue\Service\NewDeploymentsDetector;
 
@@ -221,6 +223,13 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
             return self::TASK_COMPLETE;
         }
 
+        if ($this->task->isCancellationRequested()) {
+            $this->updateTaskCancelled();
+
+            //  Tell rabbitmq not to requeue this task.
+            return self::TASK_COMPLETE;
+        }
+
         $this->updateTaskRunning();
         $payload = $this->container->get('printed.bundle.queue.helper.queue_task_helper')->getPayload($this->task);
 
@@ -249,10 +258,10 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
             }
 
             //  Handle the job.
-            $status = $this->run($payload);
+            $queueTaskStatus = $this->run($payload) ? QueueTaskStatus::COMPLETE : QueueTaskStatus::FAILED;
 
         } catch (QueueFatalErrorException $exception) {
-            $status = false;
+            $queueTaskStatus = QueueTaskStatus::FAILED;
 
             //  Log the child exception in the database, if dev provided it.
             if ($exception->getPrevious()) {
@@ -265,8 +274,13 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
             $this->task->setResponseError(get_class($exception), $exception->getMessage(), $exception->getTrace());
             $this->logger->error($exception->getMessage(), $this->getLoggerContext());
 
+        } catch (QueueTaskCancellationException $exception) {
+            $queueTaskStatus = QueueTaskStatus::CANCELLED;
+
+            $exception = null;
+
         } catch (\Throwable $exception) {
-            $status = false;
+            $queueTaskStatus = QueueTaskStatus::FAILED;
 
             //  Its good to know why a task failed, in this case we can log the exception.
             $this->task->setResponseError(get_class($exception), $exception->getMessage(), $exception->getTrace());
@@ -281,10 +295,21 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
 
         }
 
-        if ($status) {
-            $this->updateTaskComplete();
-        } else {
-            $this->updateTaskFailed();
+        switch ($queueTaskStatus) {
+            case QueueTaskStatus::COMPLETE:
+                $this->updateTaskComplete();
+                break;
+
+            case QueueTaskStatus::FAILED:
+                $this->updateTaskFailed();
+                break;
+
+            case QueueTaskStatus::CANCELLED:
+                $this->updateTaskCancelled();
+                break;
+
+            default:
+                throw new \RuntimeException("Unexpected queue task status: `{$queueTaskStatus}`");
         }
 
         $this->em->persist($this->task);
@@ -296,8 +321,54 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
             throw $exception;
         }
 
-        return $status;
+        //  Translate status failed to "false" and every other to "true", to tell rabbitmq to requeue
+        //  only the failed tasks.
+        return $queueTaskStatus === QueueTaskStatus::FAILED
+            ? self::TASK_FAILED
+            : self::TASK_COMPLETE;
 
+    }
+
+    /**
+     * Run this from your consumer to update the task's completion percentage without flushing
+     * anything else into database.
+     *
+     * @param int $completionPercentage
+     */
+    protected function setTaskCompletionPercentage(int $completionPercentage)
+    {
+        $this->task->setCompletionPercentage($completionPercentage);
+
+        $taskClassName = get_class($this->task);
+
+        $query = $this->em->createQuery("
+            UPDATE {$taskClassName} t 
+            SET t.completion_percentage = :completionPercentage
+            WHERE t.id = :taskId
+        ");
+
+        $query->setParameters([
+            'completionPercentage' => $completionPercentage,
+            'taskId' => $this->task->getId(),
+        ]);
+
+        $query->getResult();
+    }
+
+    /**
+     * Run this from your consumer at different points to cancel the tasks' processing due
+     * to the fact, that a cancellation has been requested.
+     *
+     * Naturally, you're not forced to cancel your consumer if you don't want to or when
+     * you're past "the point of no return".
+     */
+    protected function throwTaskCancellationExceptionIfCancellationRequested()
+    {
+        $this->em->refresh($this->task);
+
+        if ($this->task->isCancellationRequested()) {
+            throw new QueueTaskCancellationException("Queue task `{$this->task->getId()}` is being cancelled.");
+        }
     }
 
     /**
@@ -338,6 +409,9 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
         //  Increment the task attempts count.
         $this->task->setAttempts($this->task->getAttempts() + 1);
 
+        //  Reset completion percentage in case this task is being retried.
+        $this->task->setCompletionPercentage(0);
+
         //  Store the process ID so we can target failing workers in debug.
         $this->task->setProcessId(getmypid());
 
@@ -350,9 +424,28 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
 
     }
 
+    private function updateTaskCancelled()
+    {
+        $this->task->setStatus(QueueTaskStatus::CANCELLED);
+        $this->task->setCompletedDate(new \DateTime);
+
+        $this->logger->info(
+            sprintf(
+                'Consumer "%s" for task "%s" cancelled',
+                $this->task->getQueueName(),
+                $this->task->getId()
+            )
+        );
+
+        $this->em->persist($this->task);
+        $this->em->flush($this->task);
+
+    }
+
     private function updateTaskComplete()
     {
         $this->task->setStatus(QueueTaskInterface::STATUS_COMPLETE);
+        $this->task->setCompletionPercentage(100);
         $this->task->setCompletedDate(new \DateTime);
 
         $this->logger->info(

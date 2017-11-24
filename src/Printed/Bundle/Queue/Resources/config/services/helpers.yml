@@ -2,4 +2,5 @@ services:
 
   printed.bundle.queue.helper.queue_task_helper:
     class: 'Printed\Bundle\Queue\Helper\QueueTaskHelper'
-    arguments: []
+    arguments:
+      - '@printed.bundle.queue.repository.queue_task'
