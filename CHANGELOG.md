@@ -6,6 +6,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [4.1.0] - 2017-11-24
+### Added
+- A way to cancel tasks.
+- A way to express tasks' completion progress (percentage) during consumer's run.
+- A way to dispatch tasks on next doctrine flush event. This is helpful to fight race condition
+  between database's flush and rabbitmq's consumer start
+- A couple of very dedicated methods to QueueTaskRepository for retrieving queue tasks by
+  public id, status, queue name and payload content.
+  
+### Changed
+- **[DATABASE MIGRATION NEEDED]** Add unique db index on `queue_task.id_public`.
+- **[DATABASE MIGRATION NEEDED]** Add db column `queue_task.completion_percentage`.
+- **[DATABASE MIGRATION NEEDED]** Add db column `queue_task.cancellation_requested`.
+- Sql file with the necessary schema migrations: `src/Printed/Bundle/Queue/Resources/database_migrations/version-4.1.0.sql`
+
 ## [4.0.1] - 2017-08-21
 ### Changed
 - Check and react on failures when reading/setting stuff in the cache.
@@ -77,7 +92,8 @@ exceptions.
 ### Changed
 - [Breaking change] Use exchange-less way of using producers and consumers
 
-[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.0.1...HEAD
+[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.1.0...HEAD
+[4.1.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.0.1...4.1.0
 [4.0.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.0.0...4.0.1
 [4.0.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/3.2.1...4.0.0
 [3.2.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/3.2.0...3.2.1

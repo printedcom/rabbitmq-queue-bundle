@@ -21,6 +21,7 @@ class QueueExtension extends Extension
         $loader = new YamlFileLoader($container, new FileLocator(sprintf('%s/../Resources/config', __DIR__)));
         $loader->load('services.yml');
         $loader->load('services/helpers.yml');
+        $loader->load('services/listeners.yml');
         $loader->load('services/repositories.yml');
 
     }

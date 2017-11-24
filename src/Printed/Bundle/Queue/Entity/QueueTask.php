@@ -13,7 +13,6 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class QueueTask implements QueueTaskInterface
 {
-
     use GetDataItemFromDataOrThrowTrait;
 
     /**
@@ -28,7 +27,7 @@ class QueueTask implements QueueTaskInterface
     /**
      * @var string
      *
-     * @ORM\Column(name="id_public", type="string", length=50)
+     * @ORM\Column(name="id_public", type="string", length=50, unique=true)
      */
     protected $publicId = null;
 
@@ -52,6 +51,22 @@ class QueueTask implements QueueTaskInterface
      * @ORM\Column(name="attempts", type="integer")
      */
     protected $attempts;
+
+    /**
+     * @var int 0 ~ 100
+     *
+     * @ORM\Column(name="completion_percentage", type="integer")
+     */
+    protected $completionPercentage = 0;
+
+    /**
+     * @var bool Task cancellation is graceful for the consumers, that's why you should
+     *  expect to see tasks, that have been run to their completion, even though
+     *  a cancellation has been requested.
+     *
+     * @ORM\Column(name="cancellation_requested", type="boolean")
+     */
+    protected $cancellationRequested = false;
 
     /**
      * @var int|null
@@ -145,6 +160,15 @@ class QueueTask implements QueueTaskInterface
         return $this->queueName;
     }
 
+    public function assertQueueName(string $queueName)
+    {
+        if ($this->queueName === $queueName) {
+            return;
+        }
+
+        throw new \RuntimeException("Failed to assert, that queue task `{$this->id}` is for queue `{$queueName}`.");
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -201,6 +225,45 @@ class QueueTask implements QueueTaskInterface
     public function setAttempts(int $attempts)
     {
         $this->attempts = $attempts;
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCompletionPercentage(): int
+    {
+        return $this->completionPercentage;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setCompletionPercentage(int $completionPercentage)
+    {
+        if ($completionPercentage < 0 || $completionPercentage > 100) {
+            throw new \LogicException("Queue task's completion percentage must be between 0 and 100. Given: `{$completionPercentage}`");
+        }
+
+        $this->completionPercentage = $completionPercentage;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isCancellationRequested(): bool
+    {
+        return $this->cancellationRequested;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setCancellationRequested(bool $cancellationRequested)
+    {
+        $this->cancellationRequested = $cancellationRequested;
         return $this;
     }
 
