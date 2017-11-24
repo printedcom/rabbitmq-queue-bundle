@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - **[DATABASE MIGRATION NEEDED]** Add unique db index on `queue_task.id_public`.
 - **[DATABASE MIGRATION NEEDED]** Add db column `queue_task.completion_percentage`.
 - **[DATABASE MIGRATION NEEDED]** Add db column `queue_task.cancellation_requested`.
+- Sql file with the necessary schema migrations: `src/Printed/Bundle/Queue/Resources/database_migrations/verstion-4.1.0.sql`
 
 ## [4.0.1] - 2017-08-21
 ### Changed
