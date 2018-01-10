@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [4.2.0]
+### Added
+- Task lifecycle events: `onTaskCancelled` and `onTaskAbortedByException` 
+
 ## [4.1.1] - 2017-11-24
 ### Fixed
 - `Class Printed\\Bundle\\Queue\\Entity\\QueueTask has no field or association named completion_percentage`
@@ -95,7 +100,8 @@ exceptions.
 ### Changed
 - [Breaking change] Use exchange-less way of using producers and consumers
 
-[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.1.1...HEAD
+[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.2.0...HEAD
+[4.2.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.1.1...4.2.0
 [4.1.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.1.0...4.1.1
 [4.1.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.0.1...4.1.0
 [4.0.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.0.0...4.0.1

@@ -315,6 +315,17 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
         $this->em->persist($this->task);
         $this->em->flush($this->task);
 
+        //  Trigger relevant lifecycle events if necessary.
+        if (QueueTaskStatus::CANCELLED === $queueTaskStatus) {
+            $this->onTaskCancelled($payload);
+        }
+
+        if (isset($exception)) {
+            $isPermanentFailure = $this->task->getAttempts() >= $this->getAttemptLimit();
+
+            $this->onTaskAbortedByException($payload, $exception, $isPermanentFailure);
+        }
+
         //  If we have an exception then we should throw it again, we have done all the logging we need.
         //  This will fall back to Symfony to handle and the process with die.
         if (isset($exception)) {
@@ -327,6 +338,35 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
             ? self::TASK_FAILED
             : self::TASK_COMPLETE;
 
+    }
+
+    /**
+     * Override this method to react on this task's cancellation.
+     *
+     * Be careful, when flushing the entity manager in this method, because you don't know at which point the consumer
+     * has been cancelled. The entity manager might have some not flushed changes, which you probably don't want to
+     * be flushed at this point. In other words, either don't use the entity manager at all, or flush only the entities
+     * you really intend to flush via `EntityManager::flush($entityIIntendToFlush);`
+     *
+     * @param AbstractQueuePayload $payload
+     * @return void
+     */
+    protected function onTaskCancelled(AbstractQueuePayload $payload)
+    {
+    }
+
+    /**
+     * Override this method to react on this task's being aborted by an exception.
+     *
+     * Read about the entity manager's usage caveats in the docblock for ::onTaskCancelled().
+     *
+     * @param AbstractQueuePayload $payload
+     * @param \Exception $exception
+     * @param bool $isPermanentFailure
+     * @return void
+     */
+    protected function onTaskAbortedByException(AbstractQueuePayload $payload, \Exception $exception, bool $isPermanentFailure)
+    {
     }
 
     /**
