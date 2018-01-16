@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [4.2.1]
+### Fixed
+- `onTaskCancelled` lifecycle event not being called, when the task arrives to the consumer as cancelled.
+
 ## [4.2.0]
 ### Added
 - Task lifecycle events: `onTaskCancelled` and `onTaskAbortedByException` 
@@ -100,7 +104,8 @@ exceptions.
 ### Changed
 - [Breaking change] Use exchange-less way of using producers and consumers
 
-[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.2.0...HEAD
+[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.2.1...HEAD
+[4.2.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.2.0...4.2.1
 [4.2.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.1.1...4.2.0
 [4.1.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.1.0...4.1.1
 [4.1.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.0.1...4.1.0
