@@ -223,13 +223,6 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
             return self::TASK_COMPLETE;
         }
 
-        if ($this->task->isCancellationRequested()) {
-            $this->updateTaskCancelled();
-
-            //  Tell rabbitmq not to requeue this task.
-            return self::TASK_COMPLETE;
-        }
-
         $this->updateTaskRunning();
         $payload = $this->container->get('printed.bundle.queue.helper.queue_task_helper')->getPayload($this->task);
 
@@ -256,6 +249,8 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
             if ($errors->count()) {
                 throw new QueueFatalErrorException((string) $errors);
             }
+
+            $this->throwTaskCancellationExceptionIfCancellationRequested();
 
             //  Handle the job.
             $queueTaskStatus = $this->run($payload) ? QueueTaskStatus::COMPLETE : QueueTaskStatus::FAILED;
