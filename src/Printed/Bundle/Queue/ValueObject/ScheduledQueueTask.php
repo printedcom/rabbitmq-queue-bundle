@@ -14,20 +14,53 @@ use Printed\Bundle\Queue\Queue\AbstractQueuePayload;
  */
 class ScheduledQueueTask
 {
-    /** @var AbstractQueuePayload */
+    /**
+     * When payload is not defined then the $payloadCreatorFn is used to construct it just before the queue task is
+     * dispatched (i.e. after the entity manager flush).
+     *
+     * That's impossible for both the payload and the payload creator function not to be set.
+     *
+     * @var AbstractQueuePayload|null
+     */
     private $payload;
+
+    /** @var callable|null */
+    private $payloadCreatorFn;
 
     /** @var QueueTaskInterface|null Defined, when the task is dispatched */
     private $queueTask;
 
-    public function __construct(AbstractQueuePayload $payload, QueueTaskInterface $queueTask = null)
-    {
+    public function __construct(
+        AbstractQueuePayload $payload = null,
+        callable $payloadCreatorFn = null,
+        QueueTaskInterface $queueTask = null
+    ) {
+        if (!$payload && !$payloadCreatorFn) {
+            throw new \InvalidArgumentException(sprintf(
+                "Can't construct `%s` without providing either the queue payload or the queue payload creator function",
+                get_class()
+            ));
+        }
+
         $this->payload = $payload;
+        $this->payloadCreatorFn = $payloadCreatorFn;
         $this->queueTask = $queueTask;
     }
 
-    public function getPayload(): AbstractQueuePayload
+    /**
+     * @return AbstractQueuePayload|null
+     */
+    public function getPayload()
     {
+        return $this->payload;
+    }
+
+    public function getPayloadOrThrow(): AbstractQueuePayload
+    {
+        if (!$this->payload) {
+            throw new \RuntimeException("The queue payload isn't constructed yet. It will be after the final EntityManager flush");
+        }
+
         return $this->payload;
     }
 
@@ -57,5 +90,27 @@ class ScheduledQueueTask
     public function setQueueTask(QueueTaskInterface $queueTask = null)
     {
         $this->queueTask = $queueTask;
+    }
+
+    /**
+     * @internal Do not call this function.
+     */
+    public function constructAndGetPayload(): AbstractQueuePayload
+    {
+        if ($this->payload) {
+            throw new \RuntimeException('Queue payload is already constructed');
+        }
+
+        if (!$this->payloadCreatorFn) {
+            throw new \RuntimeException("Can't construct the queue payload because the payload creator function wasn't provided");
+        }
+
+        $this->payload = call_user_func($this->payloadCreatorFn);
+
+        if (!$this->payload instanceof AbstractQueuePayload) {
+            throw new \RuntimeException("Queue payload creator function didn't construct an instance of a queue payload");
+        }
+
+        return $this->payload;
     }
 }

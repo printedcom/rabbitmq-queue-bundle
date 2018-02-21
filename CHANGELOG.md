@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- "Late" queue payload construction capability when using `QueueTaskDispatcher::dispatchAfterNextEntityManagerFlush()`
+- [minor breaking change] `ScheduledQueueTask::__construct()`'s argument list has changed 
 
 ## [4.2.1]
 ### Fixed
