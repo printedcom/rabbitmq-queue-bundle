@@ -152,16 +152,6 @@ class QueueTaskDispatcher
      */
     public function dispatchAfterNextEntityManagerFlush($payloadOrPayloadCreatorFn): ScheduledQueueTask
     {
-        /*
-         * Disallow "array" callables because I can't get object hashes of arrays.
-         */
-        if (is_array($payloadOrPayloadCreatorFn)) {
-            throw new \InvalidArgumentException(sprintf(
-                'Callables in the array form are not supported in `%s`.',
-                __METHOD__
-            ));
-        }
-
         if (
             !$payloadOrPayloadCreatorFn instanceof AbstractQueuePayload
             && !is_callable($payloadOrPayloadCreatorFn)
@@ -170,6 +160,16 @@ class QueueTaskDispatcher
                 'Argument to `%s` function must either be an instance of `%s` or a callable',
                 __METHOD__,
                 AbstractQueuePayload::class
+            ));
+        }
+
+        /*
+         * Disallow "array" callables because I can't get object hashes of arrays.
+         */
+        if (is_array($payloadOrPayloadCreatorFn)) {
+            throw new \InvalidArgumentException(sprintf(
+                'Callables in the array form are not supported in `%s`.',
+                __METHOD__
             ));
         }
 
