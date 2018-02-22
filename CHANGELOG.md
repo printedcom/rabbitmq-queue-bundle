@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [4.3.0]
+### Added
+- "Late" queue payload construction capability when using `QueueTaskDispatcher::dispatchAfterNextEntityManagerFlush()`
+- PreQueueTaskDispatchFn: Ability to execute a piece of code after a QueueTask is created (and flushed) but immediately
+  before it's sent to the queue server.
+- [minor breaking change] `ScheduledQueueTask::__construct()`'s argument list has changed 
+
 ## [4.2.1]
 ### Fixed
 - `onTaskCancelled` lifecycle event not being called, when the task arrives to the consumer as cancelled.
@@ -104,7 +111,8 @@ exceptions.
 ### Changed
 - [Breaking change] Use exchange-less way of using producers and consumers
 
-[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.2.1...HEAD
+[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.3.0...HEAD
+[4.2.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.2.1...4.3.0
 [4.2.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.2.0...4.2.1
 [4.2.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.1.1...4.2.0
 [4.1.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.1.0...4.1.1
