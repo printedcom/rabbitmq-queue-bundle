@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - "Late" queue payload construction capability when using `QueueTaskDispatcher::dispatchAfterNextEntityManagerFlush()`
+- PreQueueTaskDispatchFn: Ability to execute a piece of code after a QueueTask is created (and flushed) but immediately
+  before it's sent to the queue server.
 - [minor breaking change] `ScheduledQueueTask::__construct()`'s argument list has changed 
 
 ## [4.2.1]

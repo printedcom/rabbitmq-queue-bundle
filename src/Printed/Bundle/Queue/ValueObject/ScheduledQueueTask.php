@@ -27,6 +27,9 @@ class ScheduledQueueTask
     /** @var callable|null */
     private $payloadCreatorFn;
 
+    /** @var callable|null See QueueTaskDispatcher::dispatch() */
+    private $preQueueTaskDispatchFn;
+
     /** @var QueueTaskInterface|null Defined, when the task is dispatched */
     private $queueTask;
 
@@ -62,6 +65,19 @@ class ScheduledQueueTask
         }
 
         return $this->payload;
+    }
+
+    /**
+     * @return callable|null
+     */
+    public function getPreQueueTaskDispatchFn()
+    {
+        return $this->preQueueTaskDispatchFn;
+    }
+
+    public function setPreQueueTaskDispatchFn(callable $preQueueTaskDispatchFn = null)
+    {
+        $this->preQueueTaskDispatchFn = $preQueueTaskDispatchFn;
     }
 
     /**

@@ -84,7 +84,6 @@ class QueueTaskDispatcher
 
     /**
      * @param AbstractQueuePayload $payload
-     *
      * @param array $options
      * @return QueueTaskInterface
      */
@@ -95,10 +94,27 @@ class QueueTaskDispatcher
              * Set this to false, if the payload is already validated.
              */
             'validatePayload' => true,
+
+            /*
+             * The preQueueTaskDispatchFn is called after the newly created QueueTask entity is created (and flushed) but
+             * immediately before it's dispatched to the queue server. This is an excellent moment for doing last-minute things
+             * (e.g. saving the created QueueTask's id somewhere and flushing the db again) just before the task is handed to
+             * to queue server, at which point race conditions start if you're not careful.
+             *
+             * The preQueueTaskDispatchFn signature should be: (queueTask: QueueTask) => void
+             */
+            'preQueueTaskDispatchFn' => null,
         ], $options);
 
         if ($options['validatePayload']) {
             $this->throwIfPayloadInvalid($payload);
+        }
+
+        if (
+            $options['preQueueTaskDispatchFn']
+            && !is_callable($options['preQueueTaskDispatchFn'])
+        ) {
+            throw new \InvalidArgumentException("`preQueueTaskDispatchFn` must either be a callable or a null");
         }
 
         $task = new QueueTask;
@@ -115,6 +131,10 @@ class QueueTaskDispatcher
 
         $this->em->persist($task);
         $this->em->flush($task);
+
+        if ($options['preQueueTaskDispatchFn']) {
+            call_user_func($options['preQueueTaskDispatchFn'], $task);
+        }
 
         $this->defaultRabbitMqProducer->publish(
             $task->getId(),
@@ -231,7 +251,10 @@ class QueueTaskDispatcher
 
             $queueTask = $this->dispatch(
                 $payload,
-                ['validatePayload' => $isPayloadConstructedLate]
+                [
+                    'validatePayload' => $isPayloadConstructedLate,
+                    'preQueueTaskDispatchFn' => $scheduledQueueTask->getPreQueueTaskDispatchFn(),
+                ]
             );
 
             $scheduledQueueTask->setQueueTask($queueTask);
