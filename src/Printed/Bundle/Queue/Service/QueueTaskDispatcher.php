@@ -84,7 +84,6 @@ class QueueTaskDispatcher
 
     /**
      * @param AbstractQueuePayload $payload
-     *
      * @param array $options
      * @return QueueTaskInterface
      */
@@ -95,10 +94,27 @@ class QueueTaskDispatcher
              * Set this to false, if the payload is already validated.
              */
             'validatePayload' => true,
+
+            /*
+             * The preQueueTaskDispatchFn is called after the newly created QueueTask entity is created (and flushed) but
+             * immediately before it's dispatched to the queue server. This is an excellent moment for doing last-minute things
+             * (e.g. saving the created QueueTask's id somewhere and flushing the db again) just before the task is handed to
+             * to queue server, at which point race conditions start if you're not careful.
+             *
+             * The preQueueTaskDispatchFn signature should be: (queueTask: QueueTask) => void
+             */
+            'preQueueTaskDispatchFn' => null,
         ], $options);
 
         if ($options['validatePayload']) {
             $this->throwIfPayloadInvalid($payload);
+        }
+
+        if (
+            $options['preQueueTaskDispatchFn']
+            && !is_callable($options['preQueueTaskDispatchFn'])
+        ) {
+            throw new \InvalidArgumentException("`preQueueTaskDispatchFn` must either be a callable or a null");
         }
 
         $task = new QueueTask;
@@ -115,6 +131,10 @@ class QueueTaskDispatcher
 
         $this->em->persist($task);
         $this->em->flush($task);
+
+        if ($options['preQueueTaskDispatchFn']) {
+            call_user_func($options['preQueueTaskDispatchFn'], $task);
+        }
 
         $this->defaultRabbitMqProducer->publish(
             $task->getId(),
@@ -142,13 +162,38 @@ class QueueTaskDispatcher
      * It's also the only safe way to dispatch queue tasks from some of the doctrine listeners
      * (e.g. postUpdate) in your app.
      *
-     * @param AbstractQueuePayload $payload
+     * If you can't create an instance of queue payload before the Doctrine flush (e.g. because you need some ids to pass
+     * in the payload), then pass a "payload creator function", which is invoked after final Doctrine flush but before
+     * the queue task dispatch.
      *
+     * @param AbstractQueuePayload|callable $payloadOrPayloadCreatorFn This must not be a callable in the array form.
+     *      The callable must return an instance of AbstractQueuePayload and require no arguments
      * @return ScheduledQueueTask
      */
-    public function dispatchAfterNextEntityManagerFlush(AbstractQueuePayload $payload): ScheduledQueueTask
+    public function dispatchAfterNextEntityManagerFlush($payloadOrPayloadCreatorFn): ScheduledQueueTask
     {
-        $existingScheduledQueueTask = $this->payloadsDelayedUntilNextDoctrineFlush[spl_object_hash($payload)]
+        if (
+            !$payloadOrPayloadCreatorFn instanceof AbstractQueuePayload
+            && !is_callable($payloadOrPayloadCreatorFn)
+        ) {
+            throw new \InvalidArgumentException(sprintf(
+                'Argument to `%s` function must either be an instance of `%s` or a callable',
+                __METHOD__,
+                AbstractQueuePayload::class
+            ));
+        }
+
+        /*
+         * Disallow "array" callables because I can't get object hashes of arrays.
+         */
+        if (is_array($payloadOrPayloadCreatorFn)) {
+            throw new \InvalidArgumentException(sprintf(
+                'Callables in the array form are not supported in `%s`.',
+                __METHOD__
+            ));
+        }
+
+        $existingScheduledQueueTask = $this->payloadsDelayedUntilNextDoctrineFlush[spl_object_hash($payloadOrPayloadCreatorFn)]
             ?? null;
 
         /*
@@ -158,10 +203,19 @@ class QueueTaskDispatcher
             return $existingScheduledQueueTask;
         }
 
-        $this->throwIfPayloadInvalid($payload);
+        /*
+         * Validate instantiated payloads now. The "delayed" payloads are validated just before they are dispatched.
+         */
+        if ($payloadOrPayloadCreatorFn instanceof AbstractQueuePayload) {
+            $this->throwIfPayloadInvalid($payloadOrPayloadCreatorFn);
+        }
 
-        $scheduledQueueTask = new ScheduledQueueTask($payload);
-        $this->payloadsDelayedUntilNextDoctrineFlush[spl_object_hash($payload)] = $scheduledQueueTask;
+        $scheduledQueueTask = new ScheduledQueueTask(
+            $payloadOrPayloadCreatorFn instanceof AbstractQueuePayload ? $payloadOrPayloadCreatorFn : null,
+            is_callable($payloadOrPayloadCreatorFn) ? $payloadOrPayloadCreatorFn : null
+        );
+
+        $this->payloadsDelayedUntilNextDoctrineFlush[spl_object_hash($payloadOrPayloadCreatorFn)] = $scheduledQueueTask;
 
         return $scheduledQueueTask;
     }
@@ -183,9 +237,24 @@ class QueueTaskDispatcher
         foreach ($this->payloadsDelayedUntilNextDoctrineFlush as $scheduledQueueTask) {
             /** @var ScheduledQueueTask $scheduledQueueTask */
 
+            $payload = $scheduledQueueTask->getPayload();
+            $isPayloadConstructedLate = false;
+
+            if (!$payload) {
+                $payload = $scheduledQueueTask->constructAndGetPayload();
+
+                /*
+                 * I don't like how the payload validation may fail after doctrine flush, but well..
+                 */
+                $isPayloadConstructedLate = true;
+            }
+
             $queueTask = $this->dispatch(
-                $scheduledQueueTask->getPayload(),
-                ['validatePayload' => false]
+                $payload,
+                [
+                    'validatePayload' => $isPayloadConstructedLate,
+                    'preQueueTaskDispatchFn' => $scheduledQueueTask->getPreQueueTaskDispatchFn(),
+                ]
             );
 
             $scheduledQueueTask->setQueueTask($queueTask);
