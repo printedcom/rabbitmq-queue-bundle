@@ -9,7 +9,13 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass="Printed\Bundle\Queue\Repository\QueueTaskRepository")
- * @ORM\Table(name="queue_task")
+ * @ORM\Table(
+ *     name="queue_task",
+ *     indexes={
+ *          @ORM\Index(columns={"status"}),
+ *          @ORM\Index(columns={"queue_name"})
+ *     },
+ * )
  */
 class QueueTask implements QueueTaskInterface
 {
