@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- `QueueTaskRepository::findByQueueNameAndStatuses()`
+- **[DATABASE MIGRATION NEEDED]** Database indices on `queue_task.status` and `queue_task.queue_name`
+- Sql file with the necessary schema migrations: `src/Printed/Bundle/Queue/Resources/database_migrations/version-4.4.0.sql`
 
 ## [4.3.0]
 ### Added
