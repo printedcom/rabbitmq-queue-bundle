@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [4.4.0]
 ### Added
 - `QueueTaskRepository::findByQueueNameAndStatuses()`
 - **[DATABASE MIGRATION NEEDED]** Database indices on `queue_task.status` and `queue_task.queue_name`
@@ -115,8 +117,9 @@ exceptions.
 ### Changed
 - [Breaking change] Use exchange-less way of using producers and consumers
 
-[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.3.0...HEAD
-[4.2.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.2.1...4.3.0
+[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.4.0...HEAD
+[4.4.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.3.0...4.4.0
+[4.3.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.2.1...4.3.0
 [4.2.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.2.0...4.2.1
 [4.2.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.1.1...4.2.0
 [4.1.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.1.0...4.1.1
