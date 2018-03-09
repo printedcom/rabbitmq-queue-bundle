@@ -41,12 +41,37 @@ class QueueTaskRepository extends EntityRepository
         string $queueName = null,
         array $queueTaskPayloadCriteria = []
     ): array {
+        return $this->findByQueueNameAndStatuses(
+            $queueName,
+            QueueTaskStatus::getUnsettledStatuses(),
+            $queueTaskPayloadCriteria
+        );
+    }
+
+    /**
+     * Learn more about the payload criteria by reading the ::findUnsettled() docblock.
+     *
+     * @param string|null $queueName
+     * @param int[] $queueTaskStatuses Collection of QueueTaskStatus::*
+     * @param array $queueTaskPayloadCriteria
+     * @return array
+     */
+    public function findByQueueNameAndStatuses(
+        string $queueName = null,
+        array $queueTaskStatuses = [],
+        array $queueTaskPayloadCriteria = []
+    ): array {
         $dbalConnection = $this->getEntityManager()->getConnection();
         $tableAlias = 'qt';
 
         $queueNameWhereSql = '';
         if ($queueName) {
             $queueNameWhereSql = "AND {$tableAlias}.queue_name = {$dbalConnection->quote($queueName)}";
+        }
+
+        $queueTaskStatusesWhereSql = '';
+        if ($queueTaskStatuses) {
+            $queueNameWhereSql = "AND {$tableAlias}.status IN (?)";
         }
 
         $queueTaskPayloadWhereSql = '';
@@ -65,16 +90,15 @@ class QueueTaskRepository extends EntityRepository
             SELECT {$resultSetMappingBuilder->generateSelectClause()}
             FROM {$this->getClassMetadata()->getTableName()} AS {$tableAlias}
             WHERE
-                {$tableAlias}.status IN (?)
+                TRUE
+                {$queueTaskStatusesWhereSql}
                 {$queueNameWhereSql}
                 {$queueTaskPayloadWhereSql}
         ", $resultSetMappingBuilder);
 
-        $nativeQuery->setParameter(
-            1,
-            QueueTaskStatus::getUnsettledStatuses(),
-            Connection::PARAM_INT_ARRAY
-        );
+        if ($queueTaskStatuses) {
+            $nativeQuery->setParameter(1, $queueTaskStatuses, Connection::PARAM_INT_ARRAY);
+        }
 
         $result = $nativeQuery->getResult();
 
