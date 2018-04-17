@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- `rabbitmq-queue-bundle.minimal_runtime_in_seconds_on_consumer_exception` option
 
 ## [4.4.0]
 ### Added

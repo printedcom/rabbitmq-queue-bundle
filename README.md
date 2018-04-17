@@ -69,6 +69,18 @@ parameters:
   # Exit code used to exit a worker, when it's detected, that it's running old code
   rabbitmq-queue-bundle.consumer_exit_code.running_using_old_code: 15
 
+  # With tools like supervisord, it's important to have consumers running without exiting for a specified amount of time
+  # in order to prove that the script started successfully. This is a problem if a consumer manages to start, connect to rabbitmq 
+  # and fail due to exception being thrown during execution of the task faster than the specified amount of time. The following
+  # option makes the consumer not fail too fast. You essentially want to put your supervisord's "startsecs" value here (in seconds).
+  # Bear in mind that the underlying code will always add 1 second to whatever value you put here in order to compensate for
+  # fraction of seconds that aren't taken into account during evaluating of how long the script has been running for. This means that
+  # you just need to put the value from supervisord's config "as is" without worrying about race conditions.
+  #
+  # You can disable this feature by either setting this option to null or not mentioning this option at all. I.e. by default this option
+  # is disabled.
+  rabbitmq-queue-bundle.minimal_runtime_in_seconds_on_consumer_exception: 1
+
   rabbitmq-queue-bundle.rabbitmq_user: '%rabbitmq_user%'
   rabbitmq-queue-bundle.rabbitmq_password: '%rabbitmq_pass%'
   
