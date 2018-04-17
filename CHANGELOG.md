@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [4.5.0] - 2018-04-17
+### Added
+- `rabbitmq-queue-bundle.minimal_runtime_in_seconds_on_consumer_exception` option
+
 ## [4.4.0]
 ### Added
 - `QueueTaskRepository::findByQueueNameAndStatuses()`
@@ -117,7 +121,8 @@ exceptions.
 ### Changed
 - [Breaking change] Use exchange-less way of using producers and consumers
 
-[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.4.0...HEAD
+[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.5.0...HEAD
+[4.5.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.4.0...4.5.0
 [4.4.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.3.0...4.4.0
 [4.3.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.2.1...4.3.0
 [4.2.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.2.0...4.2.1

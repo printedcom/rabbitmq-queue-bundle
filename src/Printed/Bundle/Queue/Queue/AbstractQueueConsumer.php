@@ -86,6 +86,11 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
     private $startUpDeploymentStamp;
 
     /**
+     * @var \DateTime The time the consumer were constructed.
+     */
+    private $startUpDateTime;
+
+    /**
      * {@inheritdoc}
      *
      * @param EntityManager $em
@@ -108,6 +113,8 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
 
         $this->newDeploymentsDetector = $this->container->get('printed.bundle.queue.service.new_deployments_detector');
         $this->startUpDeploymentStamp = $this->newDeploymentsDetector->getCurrentDeploymentStamp();
+
+        $this->startUpDateTime = new \DateTime();
     }
 
     /**
@@ -324,6 +331,8 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
         //  If we have an exception then we should throw it again, we have done all the logging we need.
         //  This will fall back to Symfony to handle and the process with die.
         if (isset($exception)) {
+            $this->sleepUntilMinimalRuntimeIsMet();
+
             throw $exception;
         }
 
@@ -528,4 +537,39 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
         }
     }
 
+    /**
+     * Sleep until minimal runtime is met.
+     *
+     * Ensure the consumer has been running for at least the amount of seconds configured, so tools like supervisord
+     * don't assume that the consumer didn't even start, if it manages to start and fail too quickly.
+     */
+    private function sleepUntilMinimalRuntimeIsMet()
+    {
+        $minimalRuntimeInSecondsParameterName = 'rabbitmq-queue-bundle.minimal_runtime_in_seconds_on_consumer_exception';
+        if (!$this->container->hasParameter($minimalRuntimeInSecondsParameterName)) {
+            return;
+        }
+
+        $minimalRuntimeInSeconds = $this->container->getParameter($minimalRuntimeInSecondsParameterName);
+
+        if (null === $minimalRuntimeInSeconds) {
+            return;
+        }
+        $minimalRuntimeInSeconds = (int) $minimalRuntimeInSeconds;
+
+        //  Forcefully add 1 second, because microseconds are not respected in this routine, so if the time since start
+        //  is 0.900s and the time of failure is 1.100, then the time difference in seconds in 1s, but in reality it
+        //  only elapsed 0.2s. On the other hand, if the times are 0.100 and 1.900, the adding of 1 second is redundant,
+        //  because the time difference is already more than 1s. It's better to be safe than sorry, I guess.
+        $minimalRuntimeInSeconds += 1;
+
+        $secondsSinceConsumerStart = (new \DateTime())->getTimeStamp() - $this->startUpDateTime->getTimeStamp();
+        $timeToSleepToMeetMinimalRuntime = $minimalRuntimeInSeconds - $secondsSinceConsumerStart;
+
+        if ($timeToSleepToMeetMinimalRuntime <= 0) {
+            return;
+        }
+
+        sleep($timeToSleepToMeetMinimalRuntime);
+    }
 }
