@@ -6,4 +6,4 @@ services:
       arguments:
         - '@printed.bundle.queue.service.queue_task_dispatcher'
       tags:
-        - { name: doctrine.event_listener, entity_manager: default, event: postFlush }
+        - { name: doctrine.event_listener, entity_manager: default, event: postFlush, lazy: true }

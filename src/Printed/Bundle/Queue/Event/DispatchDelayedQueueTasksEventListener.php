@@ -2,6 +2,7 @@
 
 namespace Printed\Bundle\Queue\Event;
 
+use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Events;
 use Printed\Bundle\Queue\Service\QueueTaskDispatcher;
@@ -10,7 +11,7 @@ use Printed\Bundle\Queue\Service\QueueTaskDispatcher;
  * Dispatch all delayed queue tasks from the queue task dispatcher, when Doctrine's postFlush
  * happens.
  */
-class DispatchDelayedQueueTasksEventListener
+class DispatchDelayedQueueTasksEventListener implements EventSubscriber
 {
     /** @var QueueTaskDispatcher */
     private $queueTaskDispatcher;
