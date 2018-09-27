@@ -36,7 +36,7 @@ Copy&paste the following to your service container configuration and alter to yo
 parameters:
 
   # Name of the service, that acts as a default producer in RabbitMQ
-  rabbitmq-queue-bundle.default_rabbitmq_producer_name: 'default_rabbitmq_producer'
+  rabbitmq-queue-bundle.default_rabbitmq_producer_name: 'old_sound_rabbit_mq.default_producer'
   
   # Use empty string. I'll probably remove it at some point. Use RabbitMQ's vhosts instead. 
   rabbitmq-queue-bundle.queue_names_prefix: ''
@@ -99,7 +99,9 @@ producers:
         connection:       default
         service_alias:    default_rabbitmq_producer
 ```
-The value of the `service_alias` should be provided in the `rabbitmq-queue-bundle.default_rabbitmq_producer_name` parameter.
+Prior to Symfony 4, the value of the `service_alias` should be provided in the `rabbitmq-queue-bundle.default_rabbitmq_producer_name` parameter.
+
+Symfony 4 and above, the value must be the name of the Producer service definition, for example `old_sound_rabbit_mq.default_producer`. Once [#562](https://github.com/php-amqplib/RabbitMqBundle/pull/562) is merged, the `service_alias` will be usable again.
  
 ### Important notice: Use dedicated EntityManager for your consumers.
 
