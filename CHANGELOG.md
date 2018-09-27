@@ -5,6 +5,36 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [4.5.1] - 2018-05-03
+### Fixed
+- `DispatchDelayedQueueTasksEventListener` causing circular inclusion in some setups
+
+## [4.5.0] - 2018-04-17
+### Added
+- `rabbitmq-queue-bundle.minimal_runtime_in_seconds_on_consumer_exception` option
+
+## [4.4.0]
+### Added
+- `QueueTaskRepository::findByQueueNameAndStatuses()`
+- **[DATABASE MIGRATION NEEDED]** Database indices on `queue_task.status` and `queue_task.queue_name`
+- Sql file with the necessary schema migrations: `src/Printed/Bundle/Queue/Resources/database_migrations/version-4.4.0.sql`
+
+## [4.3.0]
+### Added
+- "Late" queue payload construction capability when using `QueueTaskDispatcher::dispatchAfterNextEntityManagerFlush()`
+- PreQueueTaskDispatchFn: Ability to execute a piece of code after a QueueTask is created (and flushed) but immediately
+  before it's sent to the queue server.
+- [minor breaking change] `ScheduledQueueTask::__construct()`'s argument list has changed 
+
+## [4.2.1]
+### Fixed
+- `onTaskCancelled` lifecycle event not being called, when the task arrives to the consumer as cancelled.
+
+## [4.2.0]
+### Added
+- Task lifecycle events: `onTaskCancelled` and `onTaskAbortedByException` 
+
 ## [4.1.1] - 2017-11-24
 ### Fixed
 - `Class Printed\\Bundle\\Queue\\Entity\\QueueTask has no field or association named completion_percentage`
@@ -95,7 +125,13 @@ exceptions.
 ### Changed
 - [Breaking change] Use exchange-less way of using producers and consumers
 
-[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.1.1...HEAD
+[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.5.1...HEAD
+[4.5.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.5.0...4.5.1
+[4.5.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.4.0...4.5.0
+[4.4.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.3.0...4.4.0
+[4.3.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.2.1...4.3.0
+[4.2.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.2.0...4.2.1
+[4.2.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.1.1...4.2.0
 [4.1.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.1.0...4.1.1
 [4.1.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.0.1...4.1.0
 [4.0.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.0.0...4.0.1

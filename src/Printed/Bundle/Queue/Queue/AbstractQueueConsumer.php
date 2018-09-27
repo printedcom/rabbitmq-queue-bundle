@@ -86,6 +86,11 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
     private $startUpDeploymentStamp;
 
     /**
+     * @var \DateTime The time the consumer were constructed.
+     */
+    private $startUpDateTime;
+
+    /**
      * {@inheritdoc}
      *
      * @param EntityManager $em
@@ -108,6 +113,8 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
 
         $this->newDeploymentsDetector = $this->container->get('printed.bundle.queue.service.new_deployments_detector');
         $this->startUpDeploymentStamp = $this->newDeploymentsDetector->getCurrentDeploymentStamp();
+
+        $this->startUpDateTime = new \DateTime();
     }
 
     /**
@@ -223,13 +230,6 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
             return self::TASK_COMPLETE;
         }
 
-        if ($this->task->isCancellationRequested()) {
-            $this->updateTaskCancelled();
-
-            //  Tell rabbitmq not to requeue this task.
-            return self::TASK_COMPLETE;
-        }
-
         $this->updateTaskRunning();
         $payload = $this->container->get('printed.bundle.queue.helper.queue_task_helper')->getPayload($this->task);
 
@@ -256,6 +256,8 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
             if ($errors->count()) {
                 throw new QueueFatalErrorException((string) $errors);
             }
+
+            $this->throwTaskCancellationExceptionIfCancellationRequested();
 
             //  Handle the job.
             $queueTaskStatus = $this->run($payload) ? QueueTaskStatus::COMPLETE : QueueTaskStatus::FAILED;
@@ -315,9 +317,22 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
         $this->em->persist($this->task);
         $this->em->flush($this->task);
 
+        //  Trigger relevant lifecycle events if necessary.
+        if (QueueTaskStatus::CANCELLED === $queueTaskStatus) {
+            $this->onTaskCancelled($payload);
+        }
+
+        if (isset($exception)) {
+            $isPermanentFailure = $this->task->getAttempts() >= $this->getAttemptLimit();
+
+            $this->onTaskAbortedByException($payload, $exception, $isPermanentFailure);
+        }
+
         //  If we have an exception then we should throw it again, we have done all the logging we need.
         //  This will fall back to Symfony to handle and the process with die.
         if (isset($exception)) {
+            $this->sleepUntilMinimalRuntimeIsMet();
+
             throw $exception;
         }
 
@@ -327,6 +342,35 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
             ? self::TASK_FAILED
             : self::TASK_COMPLETE;
 
+    }
+
+    /**
+     * Override this method to react on this task's cancellation.
+     *
+     * Be careful, when flushing the entity manager in this method, because you don't know at which point the consumer
+     * has been cancelled. The entity manager might have some not flushed changes, which you probably don't want to
+     * be flushed at this point. In other words, either don't use the entity manager at all, or flush only the entities
+     * you really intend to flush via `EntityManager::flush($entityIIntendToFlush);`
+     *
+     * @param AbstractQueuePayload $payload
+     * @return void
+     */
+    protected function onTaskCancelled(AbstractQueuePayload $payload)
+    {
+    }
+
+    /**
+     * Override this method to react on this task's being aborted by an exception.
+     *
+     * Read about the entity manager's usage caveats in the docblock for ::onTaskCancelled().
+     *
+     * @param AbstractQueuePayload $payload
+     * @param \Exception $exception
+     * @param bool $isPermanentFailure
+     * @return void
+     */
+    protected function onTaskAbortedByException(AbstractQueuePayload $payload, \Exception $exception, bool $isPermanentFailure)
+    {
     }
 
     /**
@@ -493,4 +537,39 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
         }
     }
 
+    /**
+     * Sleep until minimal runtime is met.
+     *
+     * Ensure the consumer has been running for at least the amount of seconds configured, so tools like supervisord
+     * don't assume that the consumer didn't even start, if it manages to start and fail too quickly.
+     */
+    private function sleepUntilMinimalRuntimeIsMet()
+    {
+        $minimalRuntimeInSecondsParameterName = 'rabbitmq-queue-bundle.minimal_runtime_in_seconds_on_consumer_exception';
+        if (!$this->container->hasParameter($minimalRuntimeInSecondsParameterName)) {
+            return;
+        }
+
+        $minimalRuntimeInSeconds = $this->container->getParameter($minimalRuntimeInSecondsParameterName);
+
+        if (null === $minimalRuntimeInSeconds) {
+            return;
+        }
+        $minimalRuntimeInSeconds = (int) $minimalRuntimeInSeconds;
+
+        //  Forcefully add 1 second, because microseconds are not respected in this routine, so if the time since start
+        //  is 0.900s and the time of failure is 1.100, then the time difference in seconds in 1s, but in reality it
+        //  only elapsed 0.2s. On the other hand, if the times are 0.100 and 1.900, the adding of 1 second is redundant,
+        //  because the time difference is already more than 1s. It's better to be safe than sorry, I guess.
+        $minimalRuntimeInSeconds += 1;
+
+        $secondsSinceConsumerStart = (new \DateTime())->getTimeStamp() - $this->startUpDateTime->getTimeStamp();
+        $timeToSleepToMeetMinimalRuntime = $minimalRuntimeInSeconds - $secondsSinceConsumerStart;
+
+        if ($timeToSleepToMeetMinimalRuntime <= 0) {
+            return;
+        }
+
+        sleep($timeToSleepToMeetMinimalRuntime);
+    }
 }
