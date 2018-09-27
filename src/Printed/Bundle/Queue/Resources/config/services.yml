@@ -8,23 +8,27 @@ services:
       - '@monolog.logger.queue'
       - '@validator'
       - '@service_container'
+    public: true
 
   # Queue Maintenance Manager.
   printed.bundle.queue.service.queue_maintenance:
     class: 'Printed\Bundle\Queue\Service\QueueMaintenance'
     arguments:
       - "@=service(parameter('rabbitmq-queue-bundle.queue_maintenance_strategy.service_name'))"
+    public: true
 
   printed.bundle.queue.service.queue_maintenance.filesystem_queue_maintenance_strategy:
     class: 'Printed\Bundle\Queue\Service\QueueMaintenance\FilesystemQueueMaintenanceStrategy'
     arguments:
       - '%kernel.cache_dir%'
+    public: true
 
   printed.bundle.queue.service.queue_maintenance.cache_queue_maintenance_strategy:
     class: 'Printed\Bundle\Queue\Service\QueueMaintenance\CacheQueueMaintenanceStrategy'
     arguments:
       - "@=service(parameter('rabbitmq-queue-bundle.cache_queue_maintenance_strategy.cache_service_name'))"
       - "@logger"
+    public: true
 
   # New deployments detector.
   printed.bundle.queue.service.new_deployments_detector:
@@ -33,16 +37,19 @@ services:
       - "@=container.hasParameter('rabbitmq-queue-bundle.new_deployments_detector_strategy.service_name')
         ? service(parameter('rabbitmq-queue-bundle.new_deployments_detector_strategy.service_name'))
         : service('printed.bundle.queue.service.new_deployments_detector.noop_strategy')"
+    public: true
 
   printed.bundle.queue.service.new_deployments_detector.noop_strategy:
     class: 'Printed\Bundle\Queue\Service\NewDeploymentsDetector\NoopNewDeploymentsDetectorStrategy'
     arguments: []
+    public: true
 
   printed.bundle.queue.service.new_deployments_detector.cache_strategy:
     class: 'Printed\Bundle\Queue\Service\NewDeploymentsDetector\CacheNewDeploymentsDetectorStrategy'
     arguments:
       - "@=service(parameter('rabbitmq-queue-bundle.new_deployments_detector_strategy.cache_service_name'))"
       - "@logger"
+    public: true
 
   # Vhost existence ensurer.
   printed.bundle.queue.service.rabbit_mq_vhost_existence_ensurer:
@@ -53,7 +60,9 @@ services:
       - '%rabbitmq-queue-bundle.rabbitmq_password%'
       - '%rabbitmq-queue-bundle.rabbitmq_vhost%'
       - '%rabbitmq-queue-bundle.rabbitmq_api_base_url%'
+    public: true
 
   # UUID service.
   printed.bundle.queue.service.uuid:
     class: 'Ramsey\Uuid\UuidFactory'
+    public: true
