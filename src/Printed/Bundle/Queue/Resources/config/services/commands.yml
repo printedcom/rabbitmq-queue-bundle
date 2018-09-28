@@ -1,0 +1,42 @@
+services:
+
+  printed.bundle.queue.command.abstract_command:
+    abstract: true
+    public: false
+
+  printed.bundle.queue.command.ensure_vhost_exists_command:
+    parent: 'printed.bundle.queue.command.abstract_command'
+    class: 'Printed\Bundle\Queue\Command\EnsureVhostExistsCommand'
+    tags:
+      - { name: 'console.command' }
+
+  printed.bundle.queue.command.maintenance_down_command:
+    parent: 'printed.bundle.queue.command.abstract_command'
+    class: 'Printed\Bundle\Queue\Command\MaintenanceDownCommand'
+    tags:
+      - { name: 'console.command' }
+
+  printed.bundle.queue.command.maintenance_up_command:
+    parent: 'printed.bundle.queue.command.abstract_command'
+    class: 'Printed\Bundle\Queue\Command\MaintenanceUpCommand'
+    tags:
+      - { name: 'console.command' }
+
+  printed.bundle.queue.command.maintenance_wait_for_running_command:
+    parent: 'printed.bundle.queue.command.abstract_command'
+    class: 'Printed\Bundle\Queue\Command\MaintenanceWaitForRunningCommand'
+    tags:
+      - { name: 'console.command' }
+
+  printed.bundle.queue.command.requeue_task_command:
+    parent: 'printed.bundle.queue.command.abstract_command'
+    class: 'Printed\Bundle\Queue\Command\RequeueTaskCommand'
+    tags:
+      - { name: 'console.command' }
+
+  printed.bundle.queue.command.store_new_deployment_stamp_command:
+    parent: 'printed.bundle.queue.command.abstract_command'
+    class: 'Printed\Bundle\Queue\Command\StoreNewDeploymentStampCommand'
+    tags:
+      - { name: 'console.command' }
+
