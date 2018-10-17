@@ -2,6 +2,7 @@
 
 namespace Printed\Bundle\Queue\Command;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -16,6 +17,15 @@ use RabbitMq;
 class RequeueTaskCommand extends Command implements ContainerAwareInterface
 {
     use ContainerAwareTrait;
+
+    private $logger;
+
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+
+        parent::__construct();
+    }
 
     /**
      * {@inheritdoc}
@@ -38,12 +48,11 @@ class RequeueTaskCommand extends Command implements ContainerAwareInterface
             $output->setVerbosity(OutputInterface::VERBOSITY_VERY_VERBOSE);
         }
 
-        $logger = $this->container->get('logger');
         $queueTaskDispatcher = $this->container->get('printed.bundle.queue.service.queue_task_dispatcher');
         $queueTaskHelper = $this->container->get('printed.bundle.queue.helper.queue_task_helper');
         $queueTaskIdToRequeue = $input->getArgument('queue-task-id');
 
-        $logger->info("Trying to requeue a queue task with id `{$queueTaskIdToRequeue}`");
+        $this->logger->info("Trying to requeue a queue task with id `{$queueTaskIdToRequeue}`");
 
         $task = $this->container->get('printed.bundle.queue.repository.queue_task')->find($queueTaskIdToRequeue);
 
@@ -53,7 +62,7 @@ class RequeueTaskCommand extends Command implements ContainerAwareInterface
 
         $newTask = $queueTaskDispatcher->dispatch($queueTaskHelper->getPayload($task));
 
-        $logger->info("Successfully requeued task. New task id: `{$newTask->getId()}`");
+        $this->logger->info("Successfully requeued task. New task id: `{$newTask->getId()}`");
     }
 
 }

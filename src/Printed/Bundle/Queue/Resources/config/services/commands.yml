@@ -31,12 +31,16 @@ services:
   printed.bundle.queue.command.requeue_task_command:
     parent: 'printed.bundle.queue.command.abstract_command'
     class: 'Printed\Bundle\Queue\Command\RequeueTaskCommand'
+    arguments:
+      - '@monolog.logger'
     tags:
       - { name: 'console.command' }
 
   printed.bundle.queue.command.store_new_deployment_stamp_command:
     parent: 'printed.bundle.queue.command.abstract_command'
     class: 'Printed\Bundle\Queue\Command\StoreNewDeploymentStampCommand'
+    arguments:
+      - '@monolog.logger'
     tags:
       - { name: 'console.command' }
 
