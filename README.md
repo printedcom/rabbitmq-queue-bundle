@@ -125,7 +125,9 @@ old_sound_rabbit_mq:
             vhost: '/'
             lazy: true
             connection_timeout: 3
-            read_write_timeout: 3
+            
+            # this needs to be 2x of the heartbeat option
+            read_write_timeout: 7200
             
             # don't forget, that you should enable tcp keepalive in rabbitmq as well: https://www.rabbitmq.com/networking.html#socket-gen-tcp-options
             keepalive: true
@@ -222,6 +224,7 @@ services:
     class: 'AppBundle\Queue\Consumer\ExampleQueueConsumer'
     arguments:
       - '@doctrine.orm.entity_manager'
+      - '@validator'
       - '@printed.bundle.queue.repository.queue_task'
       - '@monolog.logger.queue'
       - '@service_container'
