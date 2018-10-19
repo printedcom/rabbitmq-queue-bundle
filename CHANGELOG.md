@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- Added "symfony/expression-language" as a required composer dependency
 
 ## [4.5.1] - 2018-05-03
 ### Fixed
