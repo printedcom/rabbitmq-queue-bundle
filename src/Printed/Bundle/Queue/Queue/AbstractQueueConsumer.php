@@ -365,11 +365,11 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
      * Read about the entity manager's usage caveats in the docblock for ::onTaskCancelled().
      *
      * @param AbstractQueuePayload $payload
-     * @param \Exception $exception
+     * @param \Throwable $exception
      * @param bool $isPermanentFailure
      * @return void
      */
-    protected function onTaskAbortedByException(AbstractQueuePayload $payload, \Exception $exception, bool $isPermanentFailure)
+    protected function onTaskAbortedByException(AbstractQueuePayload $payload, \Throwable $exception, bool $isPermanentFailure)
     {
     }
 
