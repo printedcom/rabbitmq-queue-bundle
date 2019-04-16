@@ -386,6 +386,14 @@ class QueueTask implements QueueTaskInterface
      */
     public function setResponseError(string $class, string $message, array $stack)
     {
+        /*
+         * Gracefully handle case when $stack can't be json encoded
+         */
+        $jsonCheck = json_encode($stack);
+        if (!$jsonCheck) {
+            $stack = json_last_error_msg();
+        }
+
         $this->responseError['class'] = $class;
         $this->responseError['message'] = $message;
         $this->responseError['stack'] = $stack;
