@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [4.5.3] - 2019-07-04
+### Added
+- Add a way to dispatch a queue task with specific queue task (message) properties. This allows to make use of e.g. rabbitmq
+  x-priority feature.
+
+### Changed
+- Queue Consumer now uses "notice" level instead of "debug" when logging an occurrence of special-case exit.
+
 ## [4.5.2] - 2019-03-21
 ### Fixed
 - Added "symfony/expression-language" as a required composer dependency
@@ -130,7 +138,8 @@ exceptions.
 ### Changed
 - [Breaking change] Use exchange-less way of using producers and consumers
 
-[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.5.2...HEAD
+[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.5.3...HEAD
+[4.5.2]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.5.2...4.5.3
 [4.5.2]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.5.1...4.5.2
 [4.5.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.5.0...4.5.1
 [4.5.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.4.0...4.5.0

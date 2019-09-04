@@ -138,7 +138,8 @@ class QueueTaskDispatcher
 
         $this->defaultRabbitMqProducer->publish(
             $task->getId(),
-            $this->queueNamesPrefix . $payload::getQueueName()
+            $this->queueNamesPrefix . $payload::getQueueName(),
+            $payload->getQueueMessageProperties()
         );
 
         $this->logger->info(
