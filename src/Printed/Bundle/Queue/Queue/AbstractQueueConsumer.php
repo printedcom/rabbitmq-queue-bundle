@@ -183,7 +183,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
         //  Hold off execution if in maintenance
         $maintenance = $this->container->get('printed.bundle.queue.service.queue_maintenance');
         if ($maintenance->isEnabled()) {
-            $this->logger->debug('Accepting no more work, maintenance mode has been enabled');
+            $this->logger->notice('Accepting no more work, maintenance mode has been enabled');
 
             //  Exit code 0 will tell supervisor that this script has exited intentionally.
             //  To restart this process you need to restart supervisor.
@@ -193,7 +193,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
 
         //  Exit, if there's a newer code deployed
         if (!$this->newDeploymentsDetector->isDeploymentStampTheCurrentOne($this->startUpDeploymentStamp)) {
-            $this->logger->debug("The consumer exits, because it's running using an old code.");
+            $this->logger->notice("The consumer exits, because it's running using an old code.");
 
             $exitCodeParameterName = 'rabbitmq-queue-bundle.consumer_exit_code.running_using_old_code';
             exit(
