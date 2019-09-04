@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Add a way to dispatch a queue task with specific queue task (message) properties. This allows to make use of rabbitmq
+  x-priority feature.
+
+### Changed
+- Queue Consumer now uses "notice" level instead of "debug" when logging an occurrence of special-case exit.
 
 ## [4.5.2] - 2019-03-21
 ### Fixed
