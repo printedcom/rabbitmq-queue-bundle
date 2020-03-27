@@ -38,20 +38,7 @@ class QueueTaskDispatcher
     /** @var ProducerInterface This must be a producer that uses the default RabbitMQ's "(AMQP default)" exchange. */
     protected $defaultRabbitMqProducer;
 
-    /**
-     * In short: in develop environment use empty string and for environments, that use the same rabbitmq server,
-     * use a queue names prefix to fight name conflicts. Inform this bundle about the prefix using this
-     * configuration variable.
-     *
-     * @deprecated Use rabbitmq vhost functionality to fight queue names' conflicts.
-     *
-     * @var string
-     */
-    protected $queueNamesPrefix;
-
-    /**
-     * @var array Of structure { [queuePayloadSplObjectHash: string]: ScheduledQueueTask; }
-     */
+    /** @var array Of structure { [queuePayloadSplObjectHash: string]: ScheduledQueueTask; } */
     protected $payloadsDelayedUntilNextDoctrineFlush;
 
     /** @var bool Used to prevent dispatching the on-doctrine-flush payloads recursively */
@@ -65,8 +52,7 @@ class QueueTaskDispatcher
         LoggerInterface $logger,
         ValidatorInterface $validator,
         ProducerInterface $defaultRabbitMqProducer,
-        UuidFactory $uuidGenerator,
-        QueueBundleOptions $queueBundleOptions
+        UuidFactory $uuidGenerator
     ) {
         $this->em = $em;
         $this->logger = $logger;
@@ -76,7 +62,6 @@ class QueueTaskDispatcher
 
         $this->defaultRabbitMqProducer = $defaultRabbitMqProducer;
         $this->uuidGenerator = $uuidGenerator;
-        $this->queueNamesPrefix = $queueBundleOptions->get('queue_names_prefix');
     }
 
     /**
@@ -135,7 +120,7 @@ class QueueTaskDispatcher
 
         $this->defaultRabbitMqProducer->publish(
             $task->getId(),
-            $this->queueNamesPrefix . $payload::getQueueName(),
+            $payload::getQueueName(),
             $payload->getQueueMessageProperties()
         );
 

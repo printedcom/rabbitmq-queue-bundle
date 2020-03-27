@@ -1,3 +1,9 @@
+imports:
+  - { resource: services/commands.yml }
+  - { resource: services/helpers.yml }
+  - { resource: services/listeners.yml }
+  - { resource: services/repositories.yml }
+
 services:
   # Queue Bundle Options.
   printed.bundle.queue.service.queue_bundle_options:
@@ -15,7 +21,6 @@ services:
       - '@validator'
       - # (argument populated dynamicly in QueueExtension.php)
       - '@printed.bundle.queue.service.uuid'
-      - '@printed.bundle.queue.service.queue_bundle_options'
     public: false
 
   # Queue Maintenance Manager.
@@ -61,10 +66,7 @@ services:
     class: 'Printed\Bundle\Queue\Service\RabbitMqVhostExistenceEnsurer'
     arguments:
       - '@logger'
-      - '%rabbitmq-queue-bundle.rabbitmq_user%'
-      - '%rabbitmq-queue-bundle.rabbitmq_password%'
-      - '%rabbitmq-queue-bundle.rabbitmq_vhost%'
-      - '%rabbitmq-queue-bundle.rabbitmq_api_base_url%'
+      - '@printed.bundle.queue.service.queue_bundle_options'
     public: false
 
   # UUID service.

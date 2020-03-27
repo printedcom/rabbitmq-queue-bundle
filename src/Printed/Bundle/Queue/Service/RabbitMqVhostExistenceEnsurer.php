@@ -2,6 +2,7 @@
 
 namespace Printed\Bundle\Queue\Service;
 
+use Printed\Bundle\Queue\ValueObject\QueueBundleOptions;
 use Psr\Log\LoggerInterface;
 use RabbitMq;
 
@@ -24,22 +25,19 @@ class RabbitMqVhostExistenceEnsurer
 
     public function __construct(
         LoggerInterface $logger,
-        string $rabbitmqUser,
-        string $rabbitmqPassword,
-        string $rabbitmqVhost,
-        string $rabbitmqApiBaseUrl
+        QueueBundleOptions $queueBundleOptions
     ) {
         $this->logger = $logger;
-        $this->rabbitmqUser = $rabbitmqUser;
-        $this->rabbitmqPassword = $rabbitmqPassword;
-        $this->rabbitmqVhost = $rabbitmqVhost;
-        $this->rabbitmqApiBaseUrl = $rabbitmqApiBaseUrl;
+        $this->rabbitmqUser = $queueBundleOptions->get('rabbitmq_user');
+        $this->rabbitmqPassword = $queueBundleOptions->get('rabbitmq_password');
+        $this->rabbitmqVhost = $queueBundleOptions->get('rabbitmq_vhost');
+        $this->rabbitmqApiBaseUrl = $queueBundleOptions->get('rabbitmq_api_base_url');
 
         $this->rabbitmqManagementClient = new RabbitMq\ManagementApi\Client(
             null,
-            $rabbitmqApiBaseUrl,
-            $rabbitmqUser,
-            $rabbitmqPassword
+            $this->rabbitmqApiBaseUrl,
+            $this->rabbitmqUser,
+            $this->rabbitmqPassword
         );
     }
 

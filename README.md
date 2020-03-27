@@ -3,10 +3,18 @@
 A RabbitMQ wrapper bundle for Symfony that aims to improve your experience with consumers and producers.
 The bundle piggybacks off of the `php-amqplib/rabbitmq-bundle` bundle.
 
+## Notable features
+
+* Cancellable queue tasks
+* Queue tasks completeness progress tracking
+* An opinionated, zero-downtime deployment procedure, focused on supervisord
+* (via `php-amqplib/rabbitmq-bundle`) Queue consumer's graceful max execution time
+* Queue tasks reattempts
+
 ## Setup & Dependencies
 
 * PHP `>=7.0`
-* https://packagist.org/packages/symfony/symfony `~3.0`
+* https://packagist.org/packages/symfony/symfony `^3.4|^4.0`
 * https://packagist.org/packages/doctrine/orm `~2.5`
 * https://packagist.org/packages/monolog/monolog `~1.11`
 * https://packagist.org/packages/ramsey/uuid `~3.4`
@@ -28,68 +36,63 @@ If you do, then consider upgrading `doctrine/cache` version to at least `1.7.0`,
 `CacheQueueMaintenanceStrategy` might be saying, that the maintenance mode is up, when
 there was any connection issues to your memcached server. 
 
-### Required configuration parameters
-
-Copy&paste the following to your service container configuration and alter to your setup.
+### Bundle configuration
 
 ```yaml
-parameters:
+printedcom_rabbitmq_queue_bundle:
+  options:
+    # Name of the service, that acts as a default producer in RabbitMQ. See below this code snippet for details.
+    default_rabbitmq_producer_name: 'default_rabbitmq_producer'
+  
+    # Doctrine's EntityManager needs to be cleared between consumers' runs. `AbstractQueueConsumer`
+    # clears its own EntityManager, but if you have a separate EntityManager for your application
+    # as well, then put the name of the service, that points to that EntityManager here.
+    application_doctrine_entity_manager__service_name: ~
 
-  # Name of the service, that acts as a default producer in RabbitMQ
-  rabbitmq-queue-bundle.default_rabbitmq_producer_name: 'old_sound_rabbit_mq.default_producer'
+    # Name of the service, that implements the queue maintenance mode. Use one of the following:
+    #
+    # 1. 'printed.bundle.queue.service.queue_maintenance.cache_queue_maintenance_strategy' (recommended)
+    # 2. 'printed.bundle.queue.service.queue_maintenance.filesystem_queue_maintenance_strategy'
+    #
+    # To understand the difference, see the comments in the source code.
+    queue_maintenance_strategy__service_name: 'printed.bundle.queue.service.queue_maintenance.cache_queue_maintenance_strategy'
   
-  # Use empty string. I'll probably remove it at some point. Use RabbitMQ's vhosts instead. 
-  rabbitmq-queue-bundle.queue_names_prefix: ''
-  
-  # Doctrine's EntityManager needs to be cleared between consumers' runs. `AbstractQueueConsumer`
-  # clears its own EntityManager, but if you have a separate EntityManager for your application
-  # as well, then put the name of the service, that points to that EntityManager here.
-  rabbitmq-queue-bundle.application_doctrine_entity_manager.service_name: ~
+    # Name of a cache service, that implements the requirements outlined in the CacheQueueMaintenanceStrategy
+    cache_queue_maintenance_strategy__cache_service_name: 'rabbitmq_queue_bundle_cache'
 
-  # Name of the service, that implements the queue maintenance mode. Use one of the following:
-  #
-  # 1. 'printed.bundle.queue.service.queue_maintenance.cache_queue_maintenance_strategy' (recommended)
-  # 2. 'printed.bundle.queue.service.queue_maintenance.filesystem_queue_maintenance_strategy'
-  #
-  # To understand the difference, see the comments in the source code.
-  rabbitmq-queue-bundle.queue_maintenance_strategy.service_name: 'printed.bundle.queue.service.queue_maintenance.cache_queue_maintenance_strategy'
-  
-  # Name of a cache service, that implements the requirements outlined in the CacheQueueMaintenanceStrategy
-  rabbitmq-queue-bundle.cache_queue_maintenance_strategy.cache_service_name: 'rabbitmq_queue_bundle_cache'
-  
-  # Name of the service, that implements the New Deployments Detection feature. Choose one of the following:
-  #
-  # 1. 'printed.bundle.queue.service.new_deployments_detector.noop_strategy' - disables this functionality
-  # 2. 'printed.bundle.queue.service.new_deployments_detector.cache_strategy'
-  rabbitmq-queue-bundle.new_deployments_detector_strategy.service_name: 'printed.bundle.queue.service.new_deployments_detector.noop_strategy'
-  
-  # Name of a cache service, that implements the requirements outlined in the CacheQueueMaintenanceStrategy
-  rabbitmq-queue-bundle.new_deployments_detector_strategy.cache_service_name: 'rabbitmq_queue_bundle_cache'
-  
-  # Exit code used to exit a worker, when it's detected, that it's running old code
-  rabbitmq-queue-bundle.consumer_exit_code.running_using_old_code: 15
+    # Name of the service, that implements the New Deployments Detection feature. Choose one of the following:
+    #
+    # 1. 'printed.bundle.queue.service.new_deployments_detector.noop_strategy' - disables this functionality
+    # 2. 'printed.bundle.queue.service.new_deployments_detector.cache_strategy'
+    new_deployments_detector_strategy__service_name: 'printed.bundle.queue.service.new_deployments_detector.cache_strategy'
 
-  # With tools like supervisord, it's important to have consumers running without exiting for a specified amount of time
-  # in order to prove that the script started successfully. This is a problem if a consumer manages to start, connect to rabbitmq 
-  # and fail due to exception being thrown during execution of the task faster than the specified amount of time. The following
-  # option makes the consumer not fail too fast. You essentially want to put your supervisord's "startsecs" value here (in seconds).
-  # Bear in mind that the underlying code will always add 1 second to whatever value you put here in order to compensate for
-  # fraction of seconds that aren't taken into account during evaluating of how long the script has been running for. This means that
-  # you just need to put the value from supervisord's config "as is" without worrying about race conditions.
-  #
-  # You can disable this feature by either setting this option to null or not mentioning this option at all. I.e. by default this option
-  # is disabled.
-  rabbitmq-queue-bundle.minimal_runtime_in_seconds_on_consumer_exception: 1
+    # Name of a cache service, that implements the requirements outlined in the CacheQueueMaintenanceStrategy
+    new_deployments_detector_strategy__cache_service_name: 'rabbitmq_queue_bundle_cache'
 
-  rabbitmq-queue-bundle.rabbitmq_user: '%rabbitmq_user%'
-  rabbitmq-queue-bundle.rabbitmq_password: '%rabbitmq_pass%'
-  
-  # Pass '/' if you don't know what rabbtimq vhost is.
-  rabbitmq-queue-bundle.rabbitmq_vhost: '%rabbitmq_vhost%'
-  
-  # This is used only by commands, that call the rabbit management api. You don't need to do 
-  # anything with this key if you don't use those commands.
-  rabbitmq-queue-bundle.rabbitmq_api_base_url: 'http://%rabbitmq_host%:15672'  
+    # Exit code used to exit a worker, when it's detected, that it's running old code
+    consumer_exit_code__running_using_old_code: 15
+
+    # With tools like supervisord, it's important to have consumers running without exiting for a specified amount of time
+    # in order to prove that the script started successfully. This is a problem if a consumer manages to start, connect to rabbitmq 
+    # and fail due to exception being thrown during execution of the task faster than the specified amount of time. The following
+    # option makes the consumer not fail too fast. You essentially want to put your supervisord's "startsecs" value here (in seconds).
+    # Bear in mind that the underlying code will always add 1 second to whatever value you put here in order to compensate for
+    # fraction of seconds that aren't taken into account during evaluating of how long the script has been running for. This means that
+    # you just need to put the value from supervisord's config "as is" without worrying about race conditions.
+    #
+    # You can disable this feature by either setting this option to null or not mentioning this option at all. I.e. by default this option
+    # is disabled.
+    minimal_runtime_in_seconds_on_consumer_exception: 1
+
+    rabbitmq_user: '%rabbitmq_user%'
+    rabbitmq_password: '%rabbitmq_pass%'
+
+    # Pass '/' or don't set this option if you don't know what rabbtimq vhost is.
+    rabbitmq_vhost: '%build.env.host%'
+
+    # This is used only by commands, that call the rabbit management api. You don't need to do 
+    # anything with this key if you don't use those commands.
+    rabbitmq_api_base_url: 'http://%rabbitmq_host%:%rabbitmq_management_port%'
 ```
  
 * `rabbitmq-queue-bundle.default_rabbitmq_producer_name` You are expected to have at least one RabbitMQ producer with the following config:
@@ -99,9 +102,9 @@ producers:
         connection:       default
         service_alias:    default_rabbitmq_producer
 ```
-Prior to Symfony 4, the value of the `service_alias` should be provided in the `rabbitmq-queue-bundle.default_rabbitmq_producer_name` parameter.
-
-Symfony 4 and above, the value must be the name of the Producer service definition, for example `old_sound_rabbit_mq.default_producer`. Once [#562](https://github.com/php-amqplib/RabbitMqBundle/pull/562) is merged, the `service_alias` will be usable again.
+The value of the `service_alias` should be provided in the `rabbitmq-queue-bundle.default_rabbitmq_producer_name` parameter.
+That config creates a RabbitMQ producer which dispatches tasks to appropriate queues by queue names. This is also known
+as the "default" producer in RabbitMQ.  
  
 ### Important notice: Use dedicated EntityManager for your consumers.
 
@@ -208,11 +211,32 @@ class ExampleQueuePayload extends AbstractQueuePayload
 To dispatch this payload you can make use of the dispatcher class made available through this bundle. You can access it using `printed.bundle.queue.service.queue_task_dispatcher` against the container. For example ..
 
 ```PHP
-$payload = new ExampleQueuePayload;
-$payload->setData($myData);
+class MyServiceClass
+{
+    private $queueTaskDispatcher;
 
-$dispatcher = $this->get('printed.bundle.queue.service.queue_task_dispatcher');
-$dispatcher->dispatch($payload);
+    public function __construct(QueueTaskDispatcher $queueTaskDispatcher)
+    {
+        $this->queueTaskDispatcher = $queueTaskDispatcher;
+    }
+
+    public function doSomething()
+    {
+        // do something..
+
+        $payload = new ExampleQueuePayload;
+        $payload->setData($myData);
+        
+        $this->queueTaskDispatcher->dispatch($payload);
+    }
+}
+```
+```yaml
+services:
+  MyServiceClass:
+    class: MyServiceClass
+    arguments:
+      - '@printed.bundle.queue.service.queue_task_dispatcher'
 ```
 
 ## Consuming (Workers)
@@ -221,18 +245,19 @@ As mentioned in `php-amqplib/rabbitmq-bundle` your consumers need to be register
 
 ```YAML
 services:
-
   app_bundle.queue.consumer.example_consumer:
     class: 'AppBundle\Queue\Consumer\ExampleQueueConsumer'
     arguments:
       - '@doctrine.orm.entity_manager'
       - '@validator'
-      - '@printed.bundle.queue.repository.queue_task'
       - '@monolog.logger.queue'
-      - '@service_container'
+      - '@Psr\Container\ContainerInterface'
     public: false
-      
+    tags:
+      - container.service_subscriber
 ```
+
+Note that the `container.service_subscriber` tag is required for the ServiceSubscriber Symfony feature [link](https://symfony.com/doc/current/service_container/service_subscribers_locators.html).
 
 Then your work would look very familiar, just a few changes and enhancements:
 
@@ -252,6 +277,15 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class ExampleQueueConsumer extends AbstractQueueConsumer
 {
+    /**
+     * {@inheritDoc}
+     */
+    public static function getSubscribedServices(): array
+    {
+        return array_merge(parent::getSubscribedServices(), [
+            'some_service' => MySomeService::class,
+        ];
+    }
 
     /**
      * {@inheritdoc}
@@ -281,7 +315,7 @@ class ExampleQueueConsumer extends AbstractQueueConsumer
 
 A task must always exit with a boolean value, `true` meaning passed and `false` meaning it failed. To make this more verbose you have access to constants `TASK_COMPLETE` and `TASK_FAILED` which are simply those boolean values under the bonnet. When marking the task as failed the attempts count against the task is incremented before it is given back to the queue for another attempt. Each task will be given an attempt limit specified by the `getAttemptLimit()` method in the consumer. Feel free to override this but by default the limit is set to `10`. In those rare cases where you know the task will forever fail and you do not want to let it use its remaining attempts you can throw the `QueueFatalErrorException` exception. The message will be logged to the usual logs and the attempt limit will be maxed, this will prevent the job from spawning anymore attempts.
 
-Running these consumers is the same as the bundle mentioned: `./bin/console rabbitmq:consumer example_consumer`
+Running these consumers is the same as the bundle mentioned: `./bin/console rabbitmq:consumer example_consumer -vv`
 
 ### Maintenance and deployment
 
@@ -311,7 +345,7 @@ Then of course `queue:maintenance:down` will allow the queues to run again.
 Although you will need to manually restart them as they would have exited.
 
 Before you disable the maintenance mode, you need to make sure all old idle workers are restarted.
-There are many ways of doing it. This bundle provided you with a way for all workers to quit, when
+There are many ways of doing it. This bundle provides you with a way for all workers to quit, when
 they detect, that a new deployment has happened. This feature is called "New Deployments Detection"
 and requires you to call the `queue:store-new-deployment-stamp-command` with a string, that can be used
 to compare deployments (timestamp is generally enough). Make sure you configure this bundle to actually
@@ -334,6 +368,31 @@ Essentially you might have a build script looking like this:
 ```
 
 As the tasks are stored in the database with all their payload data it is possible to spawn all the tasks again. This is handy if you need to upgrade or migrate your RabbitMQ instance. At this time we created the command for this (sorry) but it is easy enough to do by replicating the process you do initially to spawn a task but just loop over all the entries in the database marked as `pending` or `status = 1`. See the `QueueTaskInterface` for more information here.
+
+## Tips
+
+### RabbitMQ vhosts
+
+[Official docs](https://www.rabbitmq.com/vhosts.html)
+
+If you use one RabbitMQ server to host queues for multiple of deployments of your app (e.g. hosting test, staging, regression
+environments all on one RabbitMQ server), this feature lets you do that without running into queue names' conflicts.
+
+To make use of it, set the following options:
+
+1. `old_sound_rabbit_mq.connections.default.vhost`
+2. `printedcom_rabbitmq_queue_bundle.rabbitmq_vhost`
+
+### Supervisord groups of processes.
+
+[Official docs](http://supervisord.org/configuration.html#group-x-section-settings)
+
+This allows you to collect all queue consumers in one supervisord process group, which in turn allows you to start and
+stop them by using that group name and it allows you to run queue consumers from multiple of your app environments on
+one machine without running into name conflicts. 
+
+It's also the more proper way to stop your consumers, deploy your code, reread supervisord config and start your consumers.
+That replaces the "new deployment detection" feature of this bundle.
 
 ## Tests & Contribution
 

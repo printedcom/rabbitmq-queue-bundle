@@ -133,7 +133,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
             'printed.bundle.queue.service.new_deployments_detector' => NewDeploymentsDetector::class,
             'printed.bundle.queue.service.queue_maintenance' => QueueMaintenance::class,
             'printed.bundle.queue.helper.queue_task_helper' => QueueTaskHelper::class,
-            '?printed.bundle.queue.service.client.application_entity_manager' => EntityManagerInterface::class,
+            'printed.bundle.queue.service.client.application_entity_manager' => '?'.EntityManagerInterface::class,
         ];
     }
 
@@ -215,7 +215,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
         if (!$this->newDeploymentsDetector->isDeploymentStampTheCurrentOne($this->startUpDeploymentStamp)) {
             $this->logger->notice("The consumer exits, because it's running using an old code.");
 
-            exit($this->queueBundleOptions->get('consumer_exit_code.running_using_old_code'));
+            exit($this->queueBundleOptions->get('consumer_exit_code__running_using_old_code'));
         }
 
         $this->clearKnownEntityManagers();
