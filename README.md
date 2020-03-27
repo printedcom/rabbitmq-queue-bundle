@@ -285,7 +285,7 @@ class ExampleQueueConsumer extends AbstractQueueConsumer
     {
         return array_merge(parent::getSubscribedServices(), [
             'some_service' => MySomeService::class,
-        ];
+        ]);
     }
 
     /**
