@@ -2,6 +2,9 @@
 
 namespace Printed\Bundle\Queue\Command;
 
+use Printed\Bundle\Queue\Helper\QueueTaskHelper;
+use Printed\Bundle\Queue\Repository\QueueTaskRepository;
+use Printed\Bundle\Queue\Service\QueueTaskDispatcher;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -14,17 +17,32 @@ use RabbitMq;
 /**
  * {@inheritdoc}
  */
-class RequeueTaskCommand extends Command implements ContainerAwareInterface
+class RequeueTaskCommand extends Command
 {
-    use ContainerAwareTrait;
-
+    /** @var LoggerInterface */
     private $logger;
-
-    public function __construct(LoggerInterface $logger)
-    {
-        $this->logger = $logger;
-
+    
+    /** @var QueueTaskDispatcher */
+    private $queueTaskDispatcher;
+    
+    /** @var QueueTaskHelper */
+    private $queueTaskHelper;
+    
+    /** @var QueueTaskRepository */
+    private $queueTaskRepository;
+    
+    public function __construct(
+        LoggerInterface $logger,
+        QueueTaskDispatcher $queueTaskDispatcher,
+        QueueTaskHelper $queueTaskHelper,
+        QueueTaskRepository $queueTaskRepository
+    ) {
         parent::__construct();
+        
+        $this->logger = $logger;
+        $this->queueTaskDispatcher = $queueTaskDispatcher;
+        $this->queueTaskHelper = $queueTaskHelper;
+        $this->queueTaskRepository = $queueTaskRepository;
     }
 
     /**
@@ -48,21 +66,18 @@ class RequeueTaskCommand extends Command implements ContainerAwareInterface
             $output->setVerbosity(OutputInterface::VERBOSITY_VERY_VERBOSE);
         }
 
-        $queueTaskDispatcher = $this->container->get('printed.bundle.queue.service.queue_task_dispatcher');
-        $queueTaskHelper = $this->container->get('printed.bundle.queue.helper.queue_task_helper');
         $queueTaskIdToRequeue = $input->getArgument('queue-task-id');
 
         $this->logger->info("Trying to requeue a queue task with id `{$queueTaskIdToRequeue}`");
 
-        $task = $this->container->get('printed.bundle.queue.repository.queue_task')->find($queueTaskIdToRequeue);
+        $task = $this->queueTaskRepository->find($queueTaskIdToRequeue);
 
         if (!$task) {
             throw new \RuntimeException("Couldn't find queue task with id: `{$queueTaskIdToRequeue}`");
         }
 
-        $newTask = $queueTaskDispatcher->dispatch($queueTaskHelper->getPayload($task));
+        $newTask = $this->queueTaskDispatcher->dispatch($this->queueTaskHelper->getPayload($task));
 
         $this->logger->info("Successfully requeued task. New task id: `{$newTask->getId()}`");
     }
-
 }

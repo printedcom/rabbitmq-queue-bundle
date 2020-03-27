@@ -2,24 +2,33 @@ services:
 
   printed.bundle.queue.command.ensure_vhost_exists_command:
     class: 'Printed\Bundle\Queue\Command\EnsureVhostExistsCommand'
+    arguments:
+      - '@printed.bundle.queue.service.rabbit_mq_vhost_existence_ensurer'
     tags:
       - { name: 'console.command' }
     public: false
 
   printed.bundle.queue.command.maintenance_down_command:
     class: 'Printed\Bundle\Queue\Command\MaintenanceDownCommand'
+    arguments:
+      - '@printed.bundle.queue.service.queue_maintenance'
     tags:
       - { name: 'console.command' }
     public: false
 
   printed.bundle.queue.command.maintenance_up_command:
     class: 'Printed\Bundle\Queue\Command\MaintenanceUpCommand'
+    arguments:
+      - '@printed.bundle.queue.service.queue_maintenance'
     tags:
       - { name: 'console.command' }
     public: false
 
   printed.bundle.queue.command.maintenance_wait_for_running_command:
     class: 'Printed\Bundle\Queue\Command\MaintenanceWaitForRunningCommand'
+    arguments:
+      - '@printed.bundle.queue.service.queue_maintenance'
+      - '@doctrine.dbal.default_connection'
     tags:
       - { name: 'console.command' }
     public: false
@@ -28,6 +37,9 @@ services:
     class: 'Printed\Bundle\Queue\Command\RequeueTaskCommand'
     arguments:
       - '@monolog.logger'
+      - '@printed.bundle.queue.service.queue_task_dispatcher'
+      - '@printed.bundle.queue.helper.queue_task_helper'
+      - '@printed.bundle.queue.repository.queue_task'
     tags:
       - { name: 'console.command' }
     public: false
@@ -36,6 +48,7 @@ services:
     class: 'Printed\Bundle\Queue\Command\StoreNewDeploymentStampCommand'
     arguments:
       - '@monolog.logger'
+      - '@printed.bundle.queue.service.new_deployments_detector'
     tags:
       - { name: 'console.command' }
     public: false

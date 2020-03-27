@@ -2,6 +2,7 @@
 
 namespace Printed\Bundle\Queue\Command;
 
+use Printed\Bundle\Queue\Service\NewDeploymentsDetector;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -14,17 +15,22 @@ use RabbitMq;
 /**
  * {@inheritdoc}
  */
-class StoreNewDeploymentStampCommand extends Command implements ContainerAwareInterface
+class StoreNewDeploymentStampCommand extends Command
 {
-    use ContainerAwareTrait;
-
+    /** @var LoggerInterface */
     private $logger;
 
-    public function __construct(LoggerInterface $logger)
-    {
-        $this->logger = $logger;
+    /** @var NewDeploymentsDetector */
+    private $newDeploymentsDetector;
 
+    public function __construct(
+        LoggerInterface $logger,
+        NewDeploymentsDetector $newDeploymentsDetector
+    ) {
         parent::__construct();
+
+        $this->logger = $logger;
+        $this->newDeploymentsDetector = $newDeploymentsDetector;
     }
 
     /**
@@ -51,15 +57,13 @@ class StoreNewDeploymentStampCommand extends Command implements ContainerAwareIn
         if ($output->getVerbosity() === OutputInterface::VERBOSITY_NORMAL) {
             $output->setVerbosity(OutputInterface::VERBOSITY_VERY_VERBOSE);
         }
-
-        $newDeploymentsDetector = $this->container->get('printed.bundle.queue.service.new_deployments_detector');
+        
         $newDeploymentStamp = $input->getArgument('new-deployment-stamp');
 
         $this->logger->info("Trying to set new deployment stamp: `{$newDeploymentStamp}`");
 
-        $newDeploymentsDetector->setCurrentDeploymentStamp($newDeploymentStamp);
+        $this->newDeploymentsDetector->setCurrentDeploymentStamp($newDeploymentStamp);
 
         $this->logger->info("Successfully set new deployment stamp.");
     }
-
 }

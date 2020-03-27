@@ -4,4 +4,4 @@ services:
     class: 'Printed\Bundle\Queue\Helper\QueueTaskHelper'
     arguments:
       - '@printed.bundle.queue.repository.queue_task'
-    public: true
+    public: false
