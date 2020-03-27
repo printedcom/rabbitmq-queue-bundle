@@ -7,11 +7,9 @@ use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
 use Printed\Bundle\Queue\Enum\QueueTaskStatus;
 use Printed\Bundle\Queue\Exception\QueuePayloadValidationException;
 use Printed\Bundle\Queue\Queue\AbstractQueuePayload;
-use Printed\Bundle\Queue\ValueObject\QueueBundleOptions;
 
 use Printed\Bundle\Queue\ValueObject\ScheduledQueueTask;
 use Ramsey\Uuid\UuidFactory;
-use Symfony\Component\DependencyInjection\ParameterBag\FrozenParameterBag;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 use Doctrine\ORM\EntityManager;

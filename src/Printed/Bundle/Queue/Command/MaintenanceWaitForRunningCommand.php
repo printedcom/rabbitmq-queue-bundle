@@ -2,8 +2,6 @@
 
 namespace Printed\Bundle\Queue\Command;
 
-use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
-
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use Printed\Bundle\Queue\Enum\QueueTaskStatus;
@@ -13,8 +11,6 @@ use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
 /**
  * {@inheritdoc}

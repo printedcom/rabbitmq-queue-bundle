@@ -11,7 +11,6 @@ use Printed\Bundle\Queue\Repository\QueueTaskRepository;
 use Printed\Bundle\Queue\Service\NewDeploymentsDetector;
 
 use Printed\Bundle\Queue\Service\QueueMaintenance;
-use Printed\Bundle\Queue\Service\QueueTaskDispatcher;
 use Printed\Bundle\Queue\Service\ServiceContainerParameters;
 use Printed\Bundle\Queue\ValueObject\QueueBundleOptions;
 
@@ -21,7 +20,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use PhpAmqpLib\Message\AMQPMessage;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\DependencyInjection\ServiceSubscriberInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 

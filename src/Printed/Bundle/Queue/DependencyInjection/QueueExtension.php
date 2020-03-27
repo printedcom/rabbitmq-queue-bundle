@@ -2,7 +2,6 @@
 
 namespace Printed\Bundle\Queue\DependencyInjection;
 
-use Printed\Bundle\Queue\ValueObject\QueueBundleOptions;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;

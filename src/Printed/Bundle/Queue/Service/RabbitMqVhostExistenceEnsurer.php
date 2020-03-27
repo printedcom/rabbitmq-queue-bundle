@@ -23,6 +23,9 @@ class RabbitMqVhostExistenceEnsurer
     /** @var string */
     private $rabbitmqApiBaseUrl;
 
+    /** @var RabbitMq\ManagementApi\Client */
+    private $rabbitmqManagementClient;
+
     public function __construct(
         LoggerInterface $logger,
         QueueBundleOptions $queueBundleOptions

@@ -2,8 +2,6 @@
 
 namespace Printed\Bundle\Queue\Enum;
 
-use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
-
 class QueueTaskStatus
 {
     /**
