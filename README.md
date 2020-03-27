@@ -33,7 +33,7 @@ protected function doContains($id)
 }
 ```
 If you do, then consider upgrading `doctrine/cache` version to at least `1.7.0`, otherwise
-`CacheQueueMaintenanceStrategy` might be saying, that the maintenance mode is up, when
+`CacheQueueMaintenanceStrategy` might be saying that the maintenance mode is up when
 there was any connection issues to your memcached server. 
 
 ### Bundle configuration
@@ -41,15 +41,15 @@ there was any connection issues to your memcached server.
 ```yaml
 printedcom_rabbitmq_queue_bundle:
   options:
-    # Name of the service, that acts as a default producer in RabbitMQ. See below this code snippet for details.
+    # Name of the service that acts as a default producer in RabbitMQ. See below this code snippet for details.
     default_rabbitmq_producer_name: 'default_rabbitmq_producer'
   
     # Doctrine's EntityManager needs to be cleared between consumers' runs. `AbstractQueueConsumer`
     # clears its own EntityManager, but if you have a separate EntityManager for your application
-    # as well, then put the name of the service, that points to that EntityManager here.
+    # as well then put the name of the service that points to that EntityManager here.
     application_doctrine_entity_manager__service_name: ~
 
-    # Name of the service, that implements the queue maintenance mode. Use one of the following:
+    # Name of the service that implements the queue maintenance mode. Use one of the following:
     #
     # 1. 'printed.bundle.queue.service.queue_maintenance.cache_queue_maintenance_strategy' (recommended)
     # 2. 'printed.bundle.queue.service.queue_maintenance.filesystem_queue_maintenance_strategy'
@@ -57,19 +57,19 @@ printedcom_rabbitmq_queue_bundle:
     # To understand the difference, see the comments in the source code.
     queue_maintenance_strategy__service_name: 'printed.bundle.queue.service.queue_maintenance.cache_queue_maintenance_strategy'
   
-    # Name of a cache service, that implements the requirements outlined in the CacheQueueMaintenanceStrategy
+    # Name of a cache service that implements the requirements outlined in the CacheQueueMaintenanceStrategy
     cache_queue_maintenance_strategy__cache_service_name: 'rabbitmq_queue_bundle_cache'
 
-    # Name of the service, that implements the New Deployments Detection feature. Choose one of the following:
+    # Name of the service that implements the New Deployments Detection feature. Choose one of the following:
     #
     # 1. 'printed.bundle.queue.service.new_deployments_detector.noop_strategy' - disables this functionality
     # 2. 'printed.bundle.queue.service.new_deployments_detector.cache_strategy'
     new_deployments_detector_strategy__service_name: 'printed.bundle.queue.service.new_deployments_detector.cache_strategy'
 
-    # Name of a cache service, that implements the requirements outlined in the CacheQueueMaintenanceStrategy
+    # Name of a cache service that implements the requirements outlined in the CacheQueueMaintenanceStrategy
     new_deployments_detector_strategy__cache_service_name: 'rabbitmq_queue_bundle_cache'
 
-    # Exit code used to exit a worker, when it's detected, that it's running old code
+    # Exit code used to exit a worker when it's detected that it's running old code
     consumer_exit_code__running_using_old_code: 15
 
     # With tools like supervisord, it's important to have consumers running without exiting for a specified amount of time
@@ -90,7 +90,7 @@ printedcom_rabbitmq_queue_bundle:
     # Pass '/' or don't set this option if you don't know what rabbtimq vhost is.
     rabbitmq_vhost: '%build.env.host%'
 
-    # This is used only by commands, that call the rabbit management api. You don't need to do 
+    # This is used only by commands that call the rabbit management api. You don't need to do 
     # anything with this key if you don't use those commands.
     rabbitmq_api_base_url: 'http://%rabbitmq_host%:%rabbitmq_management_port%'
 ```
@@ -108,8 +108,8 @@ as the "default" producer in RabbitMQ.
  
 ### Important notice: Use dedicated EntityManager for your consumers.
 
-Please inject subclasses of AbstractQueueConsumer with dedicated EntityManager, that is not used by the
-rest of your application. This is needed, because AbstractQueueConsumer makes use of that entity manager
+Please inject subclasses of AbstractQueueConsumer with dedicated EntityManager that is not used by the
+rest of your application. This is needed because AbstractQueueConsumer makes use of that entity manager
 to report errors in the queue tasks entries. It's not possible if the entity manager "Is already closed". 
 
 ## Usage
@@ -134,10 +134,10 @@ old_sound_rabbit_mq:
             # this needs to be 2x of the heartbeat option
             read_write_timeout: 7200
             
-            # don't forget, that you should enable tcp keepalive in rabbitmq as well: https://www.rabbitmq.com/networking.html#socket-gen-tcp-options
+            # don't forget that you should enable tcp keepalive in rabbitmq as well: https://www.rabbitmq.com/networking.html#socket-gen-tcp-options
             keepalive: true
             
-            # keep this value high, because https://github.com/php-amqplib/RabbitMqBundle/issues/301
+            # keep this value high because https://github.com/php-amqplib/RabbitMqBundle/issues/301
             heartbeat: 3600
     
     producers:
@@ -333,10 +333,10 @@ queue:maintenance:wait
 
 In essence, `queue:maintenance:up` will prevent any new jobs from being processed by the workers. When
 a new job is being delivered to a worker, while the maintenance mode is up, then the worker will
-immediately exit with code `0`. This is helpful if you are running this with something like `supervisord`,
-because `supervisord` by default doesn't restart programs, that exit with that status. 
+immediately exit with code `0`. This is helpful if you are running this with something like `supervisord`
+because `supervisord` by default doesn't restart programs that exit with that status. 
 
-It's important to understand, that the primary purpose of `queue:maintenance:up` is to prevent new jobs 
+It's important to understand that the primary purpose of `queue:maintenance:up` is to prevent new jobs 
 from being processed. That command is not for stopping/restarting workers (although it effectively happens most of the
 time). Please make use of the New Deployments Detection feature described below to restart the workers.
 
@@ -348,9 +348,9 @@ Then of course `queue:maintenance:down` will allow the queues to run again.
 Although you will need to manually restart them as they would have exited.
 
 Before you disable the maintenance mode, you need to make sure all old idle workers are restarted.
-There are many ways of doing it. This bundle provides you with a way for all workers to quit, when
-they detect, that a new deployment has happened. This feature is called "New Deployments Detection"
-and requires you to call the `queue:store-new-deployment-stamp-command` with a string, that can be used
+There are many ways of doing it. This bundle provides you with a way for all workers to quit when
+they detect that a new deployment has happened. This feature is called "New Deployments Detection"
+and requires you to call the `queue:store-new-deployment-stamp-command` with a string that can be used
 to compare deployments (timestamp is generally enough). Make sure you configure this bundle to actually
 use this feature.
 
