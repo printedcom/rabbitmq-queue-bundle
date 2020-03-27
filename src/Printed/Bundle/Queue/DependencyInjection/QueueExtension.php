@@ -27,6 +27,8 @@ class QueueExtension extends Extension
         $loader->load('services/repositories.yml');
 
         $this->defineQueueBundleOptions($container);
+        $this->defineClientApplicationEntityManager($container);
+
         $this->configureQueueServicesWithDynamicDependencies($container);
     }
 
@@ -34,6 +36,8 @@ class QueueExtension extends Extension
     {
         $bundleOptionsNames = [
             'rabbitmq-queue-bundle.queue_names_prefix' => 'queue_names_prefix',
+            'rabbitmq-queue-bundle.consumer_exit_code.running_using_old_code' => 'consumer_exit_code.running_using_old_code',
+            'rabbitmq-queue-bundle.minimal_runtime_in_seconds_on_consumer_exception' => 'minimal_runtime_in_seconds_on_consumer_exception',
         ];
 
         $bundleOptions = [];
@@ -43,6 +47,31 @@ class QueueExtension extends Extension
 
         $queueBundleOptionsDefinition = $container->getDefinition('printed.bundle.queue.service.queue_bundle_options');
         $queueBundleOptionsDefinition->setArgument(0, $bundleOptions);
+    }
+
+    private function defineClientApplicationEntityManager(ContainerBuilder $container)
+    {
+        $clientApplicationEntityManagerServiceName = $container->getParameter('rabbitmq-queue-bundle.application_doctrine_entity_manager.service_name');
+
+        /*
+         * In any case, remove this bundle's service definition. It eventually is either an alias or not defined.
+         */
+        $container->removeDefinition('printed.bundle.queue.service.client.application_entity_manager');
+
+        /*
+         * Case when null: nothing to alias.
+         */
+        if (!$clientApplicationEntityManagerServiceName) {
+            return;
+        }
+
+        /*
+         * Alias this bundle's service with the supplied entity manager.
+         */
+        $container->setAlias(
+            'printed.bundle.queue.service.client.application_entity_manager',
+            $clientApplicationEntityManagerServiceName
+        );
     }
 
     private function configureQueueServicesWithDynamicDependencies(ContainerBuilder $container)

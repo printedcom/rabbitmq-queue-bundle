@@ -1,8 +1,10 @@
 services:
+  # Queue Bundle Options.
   printed.bundle.queue.service.queue_bundle_options:
     class: 'Printed\Bundle\Queue\ValueObject\QueueBundleOptions'
     arguments:
       - # (argument populated dynamicly in QueueExtension.php)
+    public: false
 
   # Queue Task Dispatcher.
   printed.bundle.queue.service.queue_task_dispatcher:
@@ -68,4 +70,8 @@ services:
   # UUID service.
   printed.bundle.queue.service.uuid:
     class: 'Ramsey\Uuid\UuidFactory'
+    public: false
+
+  printed.bundle.queue.service.client.application_entity_manager:
+  # (defined/removed in QueueExtension.php)
     public: false
