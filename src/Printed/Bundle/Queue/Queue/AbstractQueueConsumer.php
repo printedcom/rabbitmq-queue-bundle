@@ -12,8 +12,8 @@ use Printed\Bundle\Queue\Service\NewDeploymentsDetector;
 
 use Printed\Bundle\Queue\Service\QueueMaintenance;
 use Printed\Bundle\Queue\Service\QueueTaskDispatcher;
+use Printed\Bundle\Queue\Service\ServiceContainerParameters;
 use Printed\Bundle\Queue\ValueObject\QueueBundleOptions;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,6 +21,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use PhpAmqpLib\Message\AMQPMessage;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\DependencyInjection\ServiceSubscriberInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -57,17 +58,14 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
     protected $logger;
 
     /**
-     * @deprecated Use $locator instaed
-     * @var ContainerInterface
-     */
-    protected $container;
-
-    /**
      * Services requested by ::getSubscribedServices() are available in this container.
      *
      * @var \Psr\Container\ContainerInterface
      */
     protected $locator;
+
+    /** @var ServiceContainerParameters */
+    protected $containerParameters;
 
     /** @var AMQPMessage */
     protected $message;
@@ -96,21 +94,20 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
      * @param EntityManager $em
      * @param QueueTaskRepository $repository
      * @param LoggerInterface $logger
-     * @param ContainerInterface $container
      */
     public function __construct(
         EntityManager $em,
         ValidatorInterface $validator,
         LoggerInterface $logger,
         \Psr\Container\ContainerInterface $locator,
-        ContainerInterface $container
+        ServiceContainerParameters $containerParameters
     ) {
         $this->em = $em;
         $this->validator = $validator;
-        $this->repository = $locator->get('printed.bundle.queue.repository.queue_task');
         $this->logger = $logger;
-        $this->container = $container;
         $this->locator = $locator;
+        $this->containerParameters = $containerParameters;
+        $this->repository = $locator->get('printed.bundle.queue.repository.queue_task');
         $this->queueBundleOptions = $locator->get('printed.bundle.queue.service.queue_bundle_options');
 
         $this->newDeploymentsDetector = $locator->get('printed.bundle.queue.service.new_deployments_detector');

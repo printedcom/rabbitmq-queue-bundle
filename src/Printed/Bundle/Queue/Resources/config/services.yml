@@ -12,6 +12,13 @@ services:
       - # (argument populated dynamicly in QueueExtension.php)
     public: false
 
+  # Service Container Parameters.
+  printed.bundle.queue.service.service_container_parameters:
+    class: 'Printed\Bundle\Queue\Service\ServiceContainerParameters'
+    arguments:
+      - '@service_container'
+    public: false
+
   # Queue Task Dispatcher.
   printed.bundle.queue.service.queue_task_dispatcher:
     class: 'Printed\Bundle\Queue\Service\QueueTaskDispatcher'

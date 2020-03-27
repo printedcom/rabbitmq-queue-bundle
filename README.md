@@ -252,6 +252,7 @@ services:
       - '@validator'
       - '@monolog.logger.queue'
       - '@Psr\Container\ContainerInterface'
+      - '@printed.bundle.queue.service.service_container_parameters'
     public: false
     tags:
       - container.service_subscriber
@@ -296,7 +297,9 @@ class ExampleQueueConsumer extends AbstractQueueConsumer
     {
 
         //  You hava access to all the standard things ..
-        $this->container->get('some_service');
+        $someService = $this->locator->get('some_service');
+        $usefulParameter = $this->containerParameters->get('my_app.useful_parameter');
+
         $this->em->persist($entity);
         $this->logger->info('Oh noes');
 
