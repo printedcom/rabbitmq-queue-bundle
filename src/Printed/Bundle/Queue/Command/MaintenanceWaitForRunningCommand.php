@@ -6,6 +6,7 @@ use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
+use Printed\Bundle\Queue\Enum\QueueTaskStatus;
 use Printed\Bundle\Queue\Service\QueueMaintenance;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
@@ -91,7 +92,7 @@ class MaintenanceWaitForRunningCommand extends Command
             //  Find all tasks with running status.
             $tasks = $dbal->fetchAll(
                 'SELECT id, queue_name FROM queue_task WHERE status = :status_running',
-                [ 'status_running' => QueueTaskInterface::STATUS_RUNNING ]
+                [ 'status_running' => QueueTaskStatus::RUNNING ]
             );
             $count = count($tasks);
 

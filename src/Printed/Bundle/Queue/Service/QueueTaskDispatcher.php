@@ -4,6 +4,7 @@ namespace Printed\Bundle\Queue\Service;
 
 use Printed\Bundle\Queue\Entity\QueueTask;
 use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
+use Printed\Bundle\Queue\Enum\QueueTaskStatus;
 use Printed\Bundle\Queue\Exception\QueuePayloadValidationException;
 use Printed\Bundle\Queue\Queue\AbstractQueuePayload;
 use Printed\Bundle\Queue\ValueObject\QueueBundleOptions;
@@ -102,7 +103,7 @@ class QueueTaskDispatcher
         $task = new QueueTask;
         $task->setPublicId($this->uuidGenerator->uuid4());
 
-        $task->setStatus(QueueTaskInterface::STATUS_PENDING);
+        $task->setStatus(QueueTaskStatus::PENDING);
         $task->setQueueName($payload::getQueueName());
         $task->setAttempts(0);
 

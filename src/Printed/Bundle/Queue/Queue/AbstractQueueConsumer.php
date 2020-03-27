@@ -449,7 +449,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
             )
         );
 
-        $this->task->setStatus(QueueTaskInterface::STATUS_FAILED_LIMIT_EXCEEDED);
+        $this->task->setStatus(QueueTaskStatus::FAILED_LIMIT_EXCEEDED);
         $this->task->setCompletedDate(new \DateTime);
 
         $this->em->persist($this->task);
@@ -472,7 +472,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
         $this->task->setProcessId(getmypid());
 
         //  Mark the task as running but also set the running date.
-        $this->task->setStatus(QueueTaskInterface::STATUS_RUNNING);
+        $this->task->setStatus(QueueTaskStatus::RUNNING);
         $this->task->setStartedDate(new \DateTime);
 
         $this->em->persist($this->task);
@@ -500,7 +500,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
 
     private function updateTaskComplete()
     {
-        $this->task->setStatus(QueueTaskInterface::STATUS_COMPLETE);
+        $this->task->setStatus(QueueTaskStatus::COMPLETE);
         $this->task->setCompletionPercentage(100);
         $this->task->setCompletedDate(new \DateTime);
 
@@ -516,7 +516,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
 
     private function updateTaskFailed()
     {
-        $this->task->setStatus(QueueTaskInterface::STATUS_FAILED);
+        $this->task->setStatus(QueueTaskStatus::FAILED);
         $this->task->setCompletedDate(new \DateTime);
 
         $this->logger->error(

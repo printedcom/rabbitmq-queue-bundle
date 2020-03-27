@@ -6,6 +6,7 @@ use Printed\Bundle\Queue\Common\Traits\GetDataItemFromDataOrThrowTrait;
 use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
 
 use Doctrine\ORM\Mapping as ORM;
+use Printed\Bundle\Queue\Enum\QueueTaskStatus;
 
 /**
  * @ORM\Entity(repositoryClass="Printed\Bundle\Queue\Repository\QueueTaskRepository")
@@ -205,7 +206,7 @@ class QueueTask implements QueueTaskInterface
      */
     public function isAnyFailedStatus(): bool
     {
-        return in_array($this->status, [ static::STATUS_FAILED, static::STATUS_FAILED_LIMIT_EXCEEDED ]);
+        return in_array($this->status, [ QueueTaskStatus::FAILED, QueueTaskStatus::FAILED_LIMIT_EXCEEDED ]);
     }
 
     /**
