@@ -7,21 +7,6 @@ namespace Printed\Bundle\Queue\EntityInterface;
  */
 interface QueueTaskInterface
 {
-    /** @deprecated Use QueueTaskStatus instead. */
-    const STATUS_PENDING = 1;
-
-    /** @deprecated Use QueueTaskStatus instead. */
-    const STATUS_RUNNING = 2;
-
-    /** @deprecated Use QueueTaskStatus instead. */
-    const STATUS_COMPLETE = 3;
-
-    /** @deprecated Use QueueTaskStatus instead. */
-    const STATUS_FAILED = 4;
-
-    /** @deprecated Use QueueTaskStatus instead. */
-    const STATUS_FAILED_LIMIT_EXCEEDED = 5;
-
     /**
      * Get the identifier.
      *

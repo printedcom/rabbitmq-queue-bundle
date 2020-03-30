@@ -6,10 +6,13 @@ use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
 use Printed\Bundle\Queue\Enum\QueueTaskStatus;
 use Printed\Bundle\Queue\Exception\Consumer\QueueFatalErrorException;
 use Printed\Bundle\Queue\Exception\QueueTaskCancellationException;
+use Printed\Bundle\Queue\Helper\QueueTaskHelper;
 use Printed\Bundle\Queue\Repository\QueueTaskRepository;
 use Printed\Bundle\Queue\Service\NewDeploymentsDetector;
 
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Printed\Bundle\Queue\Service\QueueMaintenance;
+use Printed\Bundle\Queue\Service\ServiceContainerParameters;
+use Printed\Bundle\Queue\ValueObject\QueueBundleOptions;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,6 +20,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use PhpAmqpLib\Message\AMQPMessage;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\ServiceSubscriberInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -25,7 +29,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  * This method extends the functionality of the {@link ConsumerInterface} to allow for tasks to be picked up
  * from the message body and tracked in the database.
  */
-abstract class AbstractQueueConsumer implements ConsumerInterface
+abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscriberInterface
 {
 
     /**
@@ -39,44 +43,38 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
      */
     const TASK_FAILED = false;
 
-    /**
-     * @var EntityManager
-     */
+    /** @var EntityManager */
     protected $em;
 
-    /**
-     * @var ValidatorInterface
-     */
+    /** @var ValidatorInterface */
     protected $validator;
 
-    /**
-     * @var QueueTaskRepository
-     */
+    /** @var QueueTaskRepository */
     protected $repository;
 
-    /**
-     * @var LoggerInterface
-     */
+    /** @var LoggerInterface */
     protected $logger;
 
     /**
-     * @var ContainerInterface
+     * Services requested by ::getSubscribedServices() are available in this container.
+     *
+     * @var \Psr\Container\ContainerInterface
      */
-    protected $container;
+    protected $locator;
 
-    /**
-     * @var AMQPMessage
-     */
+    /** @var ServiceContainerParameters */
+    protected $containerParameters;
+
+    /** @var AMQPMessage */
     protected $message;
 
-    /**
-     * @var QueueTaskInterface
-     */
+    /** @var QueueTaskInterface */
     protected $task;
 
-    /**
-     * @var NewDeploymentsDetector
-     */
+    /** @var QueueBundleOptions */
+    private $queueBundleOptions;
+
+    /** @var NewDeploymentsDetector */
     private $newDeploymentsDetector;
 
     /**
@@ -85,36 +83,46 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
      */
     private $startUpDeploymentStamp;
 
-    /**
-     * @var \DateTime The time the consumer were constructed.
-     */
+    /** @var \DateTime The time the consumer were constructed. */
     private $startUpDateTime;
 
-    /**
-     * {@inheritdoc}
-     *
-     * @param EntityManager $em
-     * @param QueueTaskRepository $repository
-     * @param LoggerInterface $logger
-     * @param ContainerInterface $container
-     */
     public function __construct(
         EntityManager $em,
         ValidatorInterface $validator,
-        QueueTaskRepository $repository,
         LoggerInterface $logger,
-        ContainerInterface $container
+        \Psr\Container\ContainerInterface $locator,
+        ServiceContainerParameters $containerParameters
     ) {
         $this->em = $em;
         $this->validator = $validator;
-        $this->repository = $repository;
         $this->logger = $logger;
-        $this->container = $container;
+        $this->locator = $locator;
+        $this->containerParameters = $containerParameters;
+        $this->repository = $locator->get('printed.bundle.queue.repository.queue_task');
+        $this->queueBundleOptions = $locator->get('printed.bundle.queue.service.queue_bundle_options');
 
-        $this->newDeploymentsDetector = $this->container->get('printed.bundle.queue.service.new_deployments_detector');
+        $this->newDeploymentsDetector = $locator->get('printed.bundle.queue.service.new_deployments_detector');
         $this->startUpDeploymentStamp = $this->newDeploymentsDetector->getCurrentDeploymentStamp();
 
         $this->startUpDateTime = new \DateTime();
+    }
+
+    public static function getSubscribedServices(): array
+    {
+        /*
+         * Dependencies for this class are required this way instead of injecting them to the constructor, so that:
+         *
+         * 1. The subclasses overriding this method don't forget to merge the parent deps.
+         * 2. More deps can be added without introducing a breaking change to the the constructor's params.
+         */
+        return [
+            'printed.bundle.queue.service.queue_bundle_options' => QueueBundleOptions::class,
+            'printed.bundle.queue.repository.queue_task' => QueueTaskRepository::class,
+            'printed.bundle.queue.service.new_deployments_detector' => NewDeploymentsDetector::class,
+            'printed.bundle.queue.service.queue_maintenance' => QueueMaintenance::class,
+            'printed.bundle.queue.helper.queue_task_helper' => QueueTaskHelper::class,
+            'printed.bundle.queue.service.client.application_entity_manager' => '?'.EntityManagerInterface::class,
+        ];
     }
 
     /**
@@ -143,7 +151,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
      */
     public function getAttemptLimit(): int
     {
-        return 10;
+        return 1;
     }
 
     /**
@@ -169,7 +177,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
      */
     public function dispatchQueuePayload(AbstractQueuePayload $payload)
     {
-        $queue = $this->container->get('printed.bundle.queue.service.queue_task_dispatcher');
+        $queue = $this->locator->get('printed.bundle.queue.service.queue_task_dispatcher');
         $queue->dispatch($payload);
     }
 
@@ -181,7 +189,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
         $this->message = $msg;
 
         //  Hold off execution if in maintenance
-        $maintenance = $this->container->get('printed.bundle.queue.service.queue_maintenance');
+        $maintenance = $this->locator->get('printed.bundle.queue.service.queue_maintenance');
         if ($maintenance->isEnabled()) {
             $this->logger->notice('Accepting no more work, maintenance mode has been enabled');
 
@@ -195,12 +203,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
         if (!$this->newDeploymentsDetector->isDeploymentStampTheCurrentOne($this->startUpDeploymentStamp)) {
             $this->logger->notice("The consumer exits, because it's running using an old code.");
 
-            $exitCodeParameterName = 'rabbitmq-queue-bundle.consumer_exit_code.running_using_old_code';
-            exit(
-                $this->container->hasParameter($exitCodeParameterName)
-                    ? $this->container->getParameter($exitCodeParameterName)
-                    : 20
-            );
+            exit($this->queueBundleOptions->get('consumer_exit_code__running_using_old_code'));
         }
 
         $this->clearKnownEntityManagers();
@@ -231,7 +234,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
         }
 
         $this->updateTaskRunning();
-        $payload = $this->container->get('printed.bundle.queue.helper.queue_task_helper')->getPayload($this->task);
+        $payload = $this->locator->get('printed.bundle.queue.helper.queue_task_helper')->getPayload($this->task);
 
         //  Attempting to log enough information to make debugging easy.
         $this->logger->info(
@@ -365,11 +368,11 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
      * Read about the entity manager's usage caveats in the docblock for ::onTaskCancelled().
      *
      * @param AbstractQueuePayload $payload
-     * @param \Exception $exception
+     * @param \Throwable $exception
      * @param bool $isPermanentFailure
      * @return void
      */
-    protected function onTaskAbortedByException(AbstractQueuePayload $payload, \Exception $exception, bool $isPermanentFailure)
+    protected function onTaskAbortedByException(AbstractQueuePayload $payload, \Throwable $exception, bool $isPermanentFailure)
     {
     }
 
@@ -437,7 +440,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
             )
         );
 
-        $this->task->setStatus(QueueTaskInterface::STATUS_FAILED_LIMIT_EXCEEDED);
+        $this->task->setStatus(QueueTaskStatus::FAILED_LIMIT_EXCEEDED);
         $this->task->setCompletedDate(new \DateTime);
 
         $this->em->persist($this->task);
@@ -460,7 +463,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
         $this->task->setProcessId(getmypid());
 
         //  Mark the task as running but also set the running date.
-        $this->task->setStatus(QueueTaskInterface::STATUS_RUNNING);
+        $this->task->setStatus(QueueTaskStatus::RUNNING);
         $this->task->setStartedDate(new \DateTime);
 
         $this->em->persist($this->task);
@@ -488,7 +491,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
 
     private function updateTaskComplete()
     {
-        $this->task->setStatus(QueueTaskInterface::STATUS_COMPLETE);
+        $this->task->setStatus(QueueTaskStatus::COMPLETE);
         $this->task->setCompletionPercentage(100);
         $this->task->setCompletedDate(new \DateTime);
 
@@ -504,7 +507,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
 
     private function updateTaskFailed()
     {
-        $this->task->setStatus(QueueTaskInterface::STATUS_FAILED);
+        $this->task->setStatus(QueueTaskStatus::FAILED);
         $this->task->setCompletedDate(new \DateTime);
 
         $this->logger->error(
@@ -524,14 +527,13 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
     {
         $this->em->clear();
 
-        //  Clear the application's doctrine entity manager, if defined.
-        $containerParameterName = 'rabbitmq-queue-bundle.application_doctrine_entity_manager.service_name';
-        if (
-            $this->container->hasParameter($containerParameterName)
-            && $this->container->getParameter($containerParameterName)
-        ) {
+        /*
+         * Clear the application's doctrine entity manager, if defined.
+         */
+        $applicationEntityManagerServiceName = 'printed.bundle.queue.service.client.application_entity_manager';
+        if ($this->locator->has($applicationEntityManagerServiceName)) {
             /** @var EntityManagerInterface $applicationEntityManager */
-            $applicationEntityManager = $this->container->get($this->container->getParameter($containerParameterName));
+            $applicationEntityManager = $this->locator->get($applicationEntityManagerServiceName);
 
             $applicationEntityManager->clear();
         }
@@ -545,12 +547,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface
      */
     private function sleepUntilMinimalRuntimeIsMet()
     {
-        $minimalRuntimeInSecondsParameterName = 'rabbitmq-queue-bundle.minimal_runtime_in_seconds_on_consumer_exception';
-        if (!$this->container->hasParameter($minimalRuntimeInSecondsParameterName)) {
-            return;
-        }
-
-        $minimalRuntimeInSeconds = $this->container->getParameter($minimalRuntimeInSecondsParameterName);
+        $minimalRuntimeInSeconds = $this->queueBundleOptions->get('minimal_runtime_in_seconds_on_consumer_exception');
 
         if (null === $minimalRuntimeInSeconds) {
             return;
