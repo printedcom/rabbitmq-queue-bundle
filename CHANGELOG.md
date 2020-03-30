@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [5.0.0] - 2020-03-30
 ### Changed
 - Make all bundle services private. Do not retrieve services directly from the service container (apart 
   from making use of the ServiceSubscriber feature).
@@ -157,7 +159,8 @@ exceptions.
 ### Changed
 - [Breaking change] Use exchange-less way of using producers and consumers
 
-[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.5.3...HEAD
+[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.0.0...HEAD
+[5.0.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.5.3...5.0.0
 [4.5.3]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.5.2...4.5.3
 [4.5.2]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.5.1...4.5.2
 [4.5.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.5.0...4.5.1
