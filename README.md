@@ -88,11 +88,11 @@ printedcom_rabbitmq_queue_bundle:
     rabbitmq_password: '%rabbitmq_pass%'
 
     # Pass '/' or don't set this option if you don't know what rabbtimq vhost is.
-    rabbitmq_vhost: '%build.env.host%'
+    rabbitmq_vhost: '%rabbitmq_vhost%'
 
     # This is used only by commands that call the rabbit management api. You don't need to do 
     # anything with this key if you don't use those commands.
-    rabbitmq_api_base_url: 'http://%rabbitmq_host%:%rabbitmq_management_port%'
+    rabbitmq_api_base_url: 'http://%rabbitmq_host%:15672'
 ```
  
 * `rabbitmq-queue-bundle.default_rabbitmq_producer_name` You are expected to have at least one RabbitMQ producer with the following config:

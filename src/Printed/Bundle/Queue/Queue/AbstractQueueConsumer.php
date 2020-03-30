@@ -86,13 +86,6 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
     /** @var \DateTime The time the consumer were constructed. */
     private $startUpDateTime;
 
-    /**
-     * {@inheritdoc}
-     *
-     * @param EntityManager $em
-     * @param QueueTaskRepository $repository
-     * @param LoggerInterface $logger
-     */
     public function __construct(
         EntityManager $em,
         ValidatorInterface $validator,

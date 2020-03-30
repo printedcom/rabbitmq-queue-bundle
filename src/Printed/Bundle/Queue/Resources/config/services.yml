@@ -9,7 +9,7 @@ services:
   printed.bundle.queue.service.queue_bundle_options:
     class: 'Printed\Bundle\Queue\ValueObject\QueueBundleOptions'
     arguments:
-      - # (argument populated dynamicly in QueueExtension.php)
+      - # (argument populated dynamically in QueueExtension.php)
     public: false
 
   # Service Container Parameters.
@@ -26,7 +26,7 @@ services:
       - '@doctrine.orm.entity_manager'
       - '@monolog.logger.queue'
       - '@validator'
-      - # (argument populated dynamicly in QueueExtension.php)
+      - # (argument populated dynamically in QueueExtension.php)
       - '@printed.bundle.queue.service.uuid'
     public: false
 
@@ -34,7 +34,7 @@ services:
   printed.bundle.queue.service.queue_maintenance:
     class: 'Printed\Bundle\Queue\Service\QueueMaintenance'
     arguments:
-      - # (argument populated dynamicly in QueueExtension.php)
+      - # (argument populated dynamically in QueueExtension.php)
     public: false
 
   printed.bundle.queue.service.queue_maintenance.filesystem_queue_maintenance_strategy:
@@ -46,7 +46,7 @@ services:
   printed.bundle.queue.service.queue_maintenance.cache_queue_maintenance_strategy:
     class: 'Printed\Bundle\Queue\Service\QueueMaintenance\CacheQueueMaintenanceStrategy'
     arguments:
-      - # (argument populated dynamicly in QueueExtension.php)
+      - # (argument populated dynamically in QueueExtension.php)
       - "@logger"
     public: false
 
@@ -54,7 +54,7 @@ services:
   printed.bundle.queue.service.new_deployments_detector:
     class: 'Printed\Bundle\Queue\Service\NewDeploymentsDetector'
     arguments:
-      - # (argument populated dynamicly in QueueExtension.php)
+      - # (argument populated dynamically in QueueExtension.php)
     public: false
 
   printed.bundle.queue.service.new_deployments_detector.noop_strategy:
@@ -64,7 +64,7 @@ services:
   printed.bundle.queue.service.new_deployments_detector.cache_strategy:
     class: 'Printed\Bundle\Queue\Service\NewDeploymentsDetector\CacheNewDeploymentsDetectorStrategy'
     arguments:
-      - # (argument populated dynamicly in QueueExtension.php)
+      - # (argument populated dynamically in QueueExtension.php)
       - "@logger"
     public: false
 

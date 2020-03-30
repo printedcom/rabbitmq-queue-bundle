@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Make all bundle services private. Do not retrieve services directly from the service container (apart 
   from making use of the ServiceSubscriber feature).
-- Allow Symfony version ^3.4|^4.4
+- Allow Symfony version ^3.4|^4.0
 
 ### Breaking changes
 - All bundle services are now private. It means that, if they are to be used, they either have to be injected or used via the ServiceSubscriber Symfony feature.
@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   readme for more details.
 - `AbstractQueueConsumer::getAttemptLimit()` now returns 1 instead of 10. This means that task reattempting is now disabled by default
   instead of being enabled by default.
-- Deprecated `QueueTaskInterface::STATUS_*` have been removed. Use QueueTaskStatus::* instead. 
+- The deprecated `QueueTaskInterface::STATUS_*` have been removed. Use QueueTaskStatus::* instead. 
 
 ## [4.5.3] - 2019-07-04
 ### Added
@@ -158,7 +158,7 @@ exceptions.
 - [Breaking change] Use exchange-less way of using producers and consumers
 
 [Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.5.3...HEAD
-[4.5.2]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.5.2...4.5.3
+[4.5.3]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.5.2...4.5.3
 [4.5.2]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.5.1...4.5.2
 [4.5.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.5.0...4.5.1
 [4.5.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.4.0...4.5.0
