@@ -4,12 +4,12 @@ namespace Printed\Bundle\Queue\Service;
 
 use Printed\Bundle\Queue\Entity\QueueTask;
 use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
+use Printed\Bundle\Queue\Enum\QueueTaskStatus;
 use Printed\Bundle\Queue\Exception\QueuePayloadValidationException;
 use Printed\Bundle\Queue\Queue\AbstractQueuePayload;
 
 use Printed\Bundle\Queue\ValueObject\ScheduledQueueTask;
-use Ramsey\Uuid\Uuid;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Ramsey\Uuid\UuidFactory;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 use Doctrine\ORM\EntityManager;
@@ -31,29 +31,13 @@ class QueueTaskDispatcher
     /** @var ValidatorInterface */
     protected $validator;
 
-    /** @var ContainerInterface */
-    protected $container;
-
-    /** @var Uuid */
+    /** @var UuidFactory */
     protected $uuidGenerator;
 
     /** @var ProducerInterface This must be a producer that uses the default RabbitMQ's "(AMQP default)" exchange. */
     protected $defaultRabbitMqProducer;
 
-    /**
-     * In short: in develop environment use empty string and for environments, that use the same rabbitmq server,
-     * use a queue names prefix to fight name conflicts. Inform this bundle about the prefix using this
-     * configuration variable.
-     *
-     * @deprecated Use rabbitmq vhost functionality to fight queue names' conflicts.
-     *
-     * @var string
-     */
-    protected $queueNamesPrefix;
-
-    /**
-     * @var array Of structure { [queuePayloadSplObjectHash: string]: ScheduledQueueTask; }
-     */
+    /** @var array Of structure { [queuePayloadSplObjectHash: string]: ScheduledQueueTask; } */
     protected $payloadsDelayedUntilNextDoctrineFlush;
 
     /** @var bool Used to prevent dispatching the on-doctrine-flush payloads recursively */
@@ -66,20 +50,17 @@ class QueueTaskDispatcher
         EntityManager $em,
         LoggerInterface $logger,
         ValidatorInterface $validator,
-        ContainerInterface $container
+        ProducerInterface $defaultRabbitMqProducer,
+        UuidFactory $uuidGenerator
     ) {
         $this->em = $em;
         $this->logger = $logger;
         $this->validator = $validator;
-        $this->container = $container;
         $this->payloadsDelayedUntilNextDoctrineFlush = [];
         $this->dispatchingOnDoctrineFlushPayloads = false;
 
-        $this->uuidGenerator = $this->container->get('printed.bundle.queue.service.uuid');
-        $this->defaultRabbitMqProducer = $this->container->get(
-            $container->getParameter('rabbitmq-queue-bundle.default_rabbitmq_producer_name')
-        );
-        $this->queueNamesPrefix = $container->getParameter('rabbitmq-queue-bundle.queue_names_prefix');
+        $this->defaultRabbitMqProducer = $defaultRabbitMqProducer;
+        $this->uuidGenerator = $uuidGenerator;
     }
 
     /**
@@ -120,7 +101,7 @@ class QueueTaskDispatcher
         $task = new QueueTask;
         $task->setPublicId($this->uuidGenerator->uuid4());
 
-        $task->setStatus(QueueTaskInterface::STATUS_PENDING);
+        $task->setStatus(QueueTaskStatus::PENDING);
         $task->setQueueName($payload::getQueueName());
         $task->setAttempts(0);
 
@@ -138,7 +119,7 @@ class QueueTaskDispatcher
 
         $this->defaultRabbitMqProducer->publish(
             $task->getId(),
-            $this->queueNamesPrefix . $payload::getQueueName(),
+            $payload::getQueueName(),
             $payload->getQueueMessageProperties()
         );
 

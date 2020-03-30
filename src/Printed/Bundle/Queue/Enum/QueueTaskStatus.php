@@ -2,36 +2,34 @@
 
 namespace Printed\Bundle\Queue\Enum;
 
-use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
-
 class QueueTaskStatus
 {
     /**
      * The task is pending execution and should be sitting in the queue already.
      */
-    const PENDING = QueueTaskInterface::STATUS_PENDING;
+    const PENDING = 1;
 
     /**
      * The task being run on a worker.
      */
-    const RUNNING = QueueTaskInterface::STATUS_RUNNING;
+    const RUNNING = 2;
 
     /**
      * The task returned a successful response.
      */
-    const COMPLETE = QueueTaskInterface::STATUS_COMPLETE;
+    const COMPLETE = 3;
 
     /**
      * The task returned a failed response or an exception was caught.
      * There may be data within the response error field. The task will be retried.
      */
-    const FAILED = QueueTaskInterface::STATUS_FAILED;
+    const FAILED = 4;
 
     /**
      * The task failed more than the allowed amount of times.
      * There may be data within the response error field but it will be historical.
      */
-    const FAILED_LIMIT_EXCEEDED = QueueTaskInterface::STATUS_FAILED_LIMIT_EXCEEDED;
+    const FAILED_LIMIT_EXCEEDED = 5;
 
     /**
      * The task has been cancelled either before it started of during its runtime. Bear in

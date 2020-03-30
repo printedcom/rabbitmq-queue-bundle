@@ -2,24 +2,36 @@
 
 namespace Printed\Bundle\Queue\Command;
 
-use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
-
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
+use Printed\Bundle\Queue\Enum\QueueTaskStatus;
+use Printed\Bundle\Queue\Service\QueueMaintenance;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
 /**
  * {@inheritdoc}
  */
-class MaintenanceWaitForRunningCommand extends Command implements ContainerAwareInterface
+class MaintenanceWaitForRunningCommand extends Command
 {
-    use ContainerAwareTrait;
+    /** @var QueueMaintenance */
+    private $queueMaintenance;
+
+    /** @var Connection */
+    private $dbalConnection;
+
+    public function __construct(
+        QueueMaintenance $queueMaintenance,
+        Connection $dbalConnection
+    ) {
+        parent::__construct();
+
+        $this->queueMaintenance = $queueMaintenance;
+        $this->dbalConnection = $dbalConnection;
+    }
 
     /**
      * {@inheritdoc}
@@ -42,8 +54,7 @@ class MaintenanceWaitForRunningCommand extends Command implements ContainerAware
         $output->writeln('<info>Monitoring running tasks</info>');
 
         //  Simply notify that maintenance mode is enabled if it is.
-        $maintenance = $this->container->get('printed.bundle.queue.service.queue_maintenance');
-        if ($maintenance->isEnabled()) {
+        if ($this->queueMaintenance->isEnabled()) {
             $output->writeln('<comment>Maintenance mode is enabled</comment>');
         }
 
@@ -51,7 +62,7 @@ class MaintenanceWaitForRunningCommand extends Command implements ContainerAware
          * EntityManager can't be used here, because the database is before db migrations at this moment.
          * DBAL is used instead.
          */
-        $dbal = $this->container->get('doctrine.dbal.default_connection');
+        $dbal = $this->dbalConnection;
 
         if (!$this->doesDatabaseExist($dbal)) {
             $output->writeln("<error>The database doesn't exist. This is expected, if the bundle is used for the first time. Otherwise it's a critical error you should investigate.</error>");
@@ -74,11 +85,10 @@ class MaintenanceWaitForRunningCommand extends Command implements ContainerAware
         $table->setHeaders(['Queue', 'Tasks']);
 
         while (true) {
-
             //  Find all tasks with running status.
             $tasks = $dbal->fetchAll(
                 'SELECT id, queue_name FROM queue_task WHERE status = :status_running',
-                [ 'status_running' => QueueTaskInterface::STATUS_RUNNING ]
+                [ 'status_running' => QueueTaskStatus::RUNNING ]
             );
             $count = count($tasks);
 
@@ -101,9 +111,7 @@ class MaintenanceWaitForRunningCommand extends Command implements ContainerAware
             $output->writeln('');
 
             sleep($refresh);
-
         }
-
     }
 
     /**
@@ -116,17 +124,14 @@ class MaintenanceWaitForRunningCommand extends Command implements ContainerAware
         $exchanges = [];
 
         foreach ($tasks as $task) {
-
             if (!isset($exchanges[$task['queue_name']])) {
                 $exchanges[$task['queue_name']] = [];
             }
 
             $exchanges[$task['queue_name']][] = $task['id'];
-
         }
 
         return $exchanges;
-
     }
 
     /**
@@ -163,5 +168,4 @@ class MaintenanceWaitForRunningCommand extends Command implements ContainerAware
 
         return $doesDatabaseExist;
     }
-
 }

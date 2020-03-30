@@ -2,18 +2,25 @@
 
 namespace Printed\Bundle\Queue\Command;
 
+use Printed\Bundle\Queue\Service\QueueMaintenance;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
 /**
  * {@inheritdoc}
  */
-class MaintenanceUpCommand extends Command implements ContainerAwareInterface
+class MaintenanceUpCommand extends Command
 {
-    use ContainerAwareTrait;
+    /** @var QueueMaintenance */
+    private $queueMaintenance;
+
+    public function __construct(QueueMaintenance $queueMaintenance)
+    {
+        parent::__construct();
+
+        $this->queueMaintenance = $queueMaintenance;
+    }
 
     /**
      * {@inheritdoc}
@@ -32,9 +39,6 @@ class MaintenanceUpCommand extends Command implements ContainerAwareInterface
     {
         $output->writeln('<info>Enabling maintenance mode</info>');
 
-        $maintenance = $this->container->get('printed.bundle.queue.service.queue_maintenance');
-        $maintenance->enable();
-
+        $this->queueMaintenance->enable();
     }
-
 }

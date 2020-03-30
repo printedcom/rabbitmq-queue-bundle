@@ -5,6 +5,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Make all bundle services private. Do not retrieve services directly from the service container (apart 
+  from making use of the ServiceSubscriber feature).
+- Allow Symfony version ^3.4|^4.0
+
+### Breaking changes
+- All bundle services are now private. It means that, if they are to be used, they either have to be injected or used via the ServiceSubscriber Symfony feature.
+- Subclasses of AbstractQueueConsumer have to use the tag: "container.service_subscriber"
+- `AbstractQueueConsumer::$container` has been removed. Subclasses either need to make use of the ServiceSubscriber feature
+  or use other means to obtain services.
+- `AbstractQueueConsumer` constructor parameters have been changed. See readme to see what's being required now.
+- The bundle now uses proper configuration, rather than relying on presence of container parameters. See readme. Configuration
+  hasn't changed apart from the way it's provided so it shouldn't be a challenge to migrate it. Note that dots in
+  configuration keys have been replaced with double underscores.
+- The "rabbitmq-queue-bundle.queue_names_prefix" option and feature has been removed. Use RabbitMQ vhosts feature instead. See 
+  readme for more details.
+- `AbstractQueueConsumer::getAttemptLimit()` now returns 1 instead of 10. This means that task reattempting is now disabled by default
+  instead of being enabled by default.
+- The deprecated `QueueTaskInterface::STATUS_*` have been removed. Use QueueTaskStatus::* instead. 
 
 ## [4.5.3] - 2019-07-04
 ### Added
