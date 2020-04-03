@@ -397,6 +397,19 @@ one machine without running into name conflicts.
 It's also the more proper way to stop your consumers, deploy your code, reread supervisord config and start your consumers.
 That replaces the "new deployment detection" feature of this bundle.
 
+### Queue tasks priorities
+
+[Official docs](https://www.rabbitmq.com/priority.html)
+
+RabbitMQ offers a way to distribute and process queue tasks with different priorities. This bundle is aware of this feature
+and offers you a way to make use of it. See: `AbstractQueuePayload::__construct()`, the `$queueMessageProperties` argument.
+
+One of the reasons why this feature is useful is a situation when you conclude that you have n consumers mostly
+doing nothing, but still occupying server's resources (RAM). You can reorganise your code to use a single queue consumer
+listening to a single, shared queue and processing queue tasks that vary in priority. This bundle doesn't offer any
+opinion on such implementation, however having a shared queue with 5 priorities: lowest, low, normal, high, highest is
+a sound setup. 
+
 ## Tests & Contribution
 
 Sadly no tests right now, there isn't much too actually test. But if you have anything to contribute then please open a pull-request now. Just keep the code clean!
