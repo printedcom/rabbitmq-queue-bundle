@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [5.0.1] - 2020-04-03
+### Added
+- The MakeServicesPublicAsALastResortCompilerPass that allows to make some of the
+  services public again, after they have been made private in v5.0.0. This is supposed
+  to be a last resort solution (see the compiler pass' docblock).
+
 ## [5.0.0] - 2020-03-30
 ### Changed
 - Make all bundle services private. Do not retrieve services directly from the service container (apart 
@@ -159,7 +165,8 @@ exceptions.
 ### Changed
 - [Breaking change] Use exchange-less way of using producers and consumers
 
-[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.0.0...HEAD
+[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.0.1...HEAD
+[5.0.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.0.0...5.0.1
 [5.0.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.5.3...5.0.0
 [4.5.3]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.5.2...4.5.3
 [4.5.2]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.5.1...4.5.2
