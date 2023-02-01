@@ -13,8 +13,7 @@ use RabbitMq;
  */
 class EnsureVhostExistsCommand extends Command
 {
-    /** @var RabbitMqVhostExistenceEnsurer */
-    private $rabbitMqVhostExistenceEnsurer;
+    private RabbitMqVhostExistenceEnsurer $rabbitMqVhostExistenceEnsurer;
 
     public function __construct(
         RabbitMqVhostExistenceEnsurer $rabbitMqVhostExistenceEnsurer

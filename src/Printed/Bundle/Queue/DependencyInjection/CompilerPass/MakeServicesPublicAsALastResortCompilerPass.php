@@ -35,10 +35,10 @@ final class MakeServicesPublicAsALastResortCompilerPass implements CompilerPassI
         $this->serviceNames = $serviceNames;
     }
 
-    public function process(ContainerBuilder $containerBuilder): void
+    public function process(ContainerBuilder $container): void
     {
         foreach ($this->serviceNames as $serviceName) {
-            $containerBuilder->getDefinition($serviceName)
+            $container->getDefinition($serviceName)
                 ->setPublic(true);
         }
     }

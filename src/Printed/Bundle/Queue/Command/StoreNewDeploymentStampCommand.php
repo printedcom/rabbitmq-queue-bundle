@@ -15,11 +15,9 @@ use RabbitMq;
  */
 class StoreNewDeploymentStampCommand extends Command
 {
-    /** @var LoggerInterface */
-    private $logger;
+    private LoggerInterface $logger;
 
-    /** @var NewDeploymentsDetector */
-    private $newDeploymentsDetector;
+    private NewDeploymentsDetector $newDeploymentsDetector;
 
     public function __construct(
         LoggerInterface $logger,

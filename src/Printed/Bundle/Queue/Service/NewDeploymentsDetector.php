@@ -6,8 +6,7 @@ use Printed\Bundle\Queue\Service\NewDeploymentsDetector\NewDeploymentsDetectorSt
 
 class NewDeploymentsDetector
 {
-    /** @var NewDeploymentsDetectorStrategyInterface */
-    private $newDeploymentsDetectorStrategy;
+    private NewDeploymentsDetectorStrategyInterface $newDeploymentsDetectorStrategy;
 
     public function __construct(
         NewDeploymentsDetectorStrategyInterface $newDeploymentsDetectorStrategy
@@ -20,7 +19,7 @@ class NewDeploymentsDetector
         return $this->newDeploymentsDetectorStrategy->getCurrentDeploymentStamp();
     }
 
-    public function setCurrentDeploymentStamp(string $deploymentStamp)
+    public function setCurrentDeploymentStamp(string $deploymentStamp): void
     {
         $this->newDeploymentsDetectorStrategy->setCurrentDeploymentStamp($deploymentStamp);
     }

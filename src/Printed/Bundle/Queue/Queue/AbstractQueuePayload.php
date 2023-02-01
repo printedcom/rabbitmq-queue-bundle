@@ -91,7 +91,7 @@ abstract class AbstractQueuePayload
          */
         $filteredPayloadProperties = [];
         foreach ($payloadProperties as $key => $value) {
-            if (0 === strpos($key, '__')) {
+            if (str_starts_with($key, '__')) {
                 continue;
             }
 

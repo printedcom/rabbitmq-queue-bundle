@@ -17,17 +17,13 @@ use RabbitMq;
  */
 class RequeueTaskCommand extends Command
 {
-    /** @var LoggerInterface */
-    private $logger;
+    private LoggerInterface $logger;
     
-    /** @var QueueTaskDispatcher */
-    private $queueTaskDispatcher;
+    private QueueTaskDispatcher $queueTaskDispatcher;
     
-    /** @var QueueTaskHelper */
-    private $queueTaskHelper;
+    private QueueTaskHelper $queueTaskHelper;
     
-    /** @var QueueTaskRepository */
-    private $queueTaskRepository;
+    private QueueTaskRepository $queueTaskRepository;
     
     public function __construct(
         LoggerInterface $logger,

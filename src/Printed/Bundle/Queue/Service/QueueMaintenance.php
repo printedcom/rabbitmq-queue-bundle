@@ -6,8 +6,7 @@ use Printed\Bundle\Queue\Service\QueueMaintenance\QueueMaintenanceStrategyInterf
 
 class QueueMaintenance
 {
-    /** @var QueueMaintenanceStrategyInterface */
-    private $queueMaintenanceStrategy;
+    private QueueMaintenanceStrategyInterface $queueMaintenanceStrategy;
 
     public function __construct(
         QueueMaintenanceStrategyInterface $queueMaintenanceStrategy
@@ -20,12 +19,12 @@ class QueueMaintenance
         return $this->queueMaintenanceStrategy->isEnabled();
     }
 
-    public function enable()
+    public function enable(): void
     {
         $this->queueMaintenanceStrategy->enable();
     }
 
-    public function disable()
+    public function disable(): void
     {
         $this->queueMaintenanceStrategy->disable();
     }

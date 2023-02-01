@@ -18,10 +18,10 @@ class Configuration implements ConfigurationInterface
     /**
      * {@inheritDoc}
      */
-    public function getConfigTreeBuilder()
+    public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root($this->bundleAlias);
+        $treeBuilder = new TreeBuilder($this->bundleAlias);
+        $rootNode = $treeBuilder->getRootNode();
         
         $rootNode
             ->children()

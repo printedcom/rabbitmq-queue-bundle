@@ -8,23 +8,18 @@ use RabbitMq;
 
 class RabbitMqVhostExistenceEnsurer
 {
-    /** @var LoggerInterface */
-    private $logger;
+    private LoggerInterface $logger;
 
     /** @var string */
-    private $rabbitmqUser;
+    private string $rabbitmqUser;
 
-    /** @var string */
-    private $rabbitmqPassword;
+    private string $rabbitmqPassword;
 
-    /** @var string */
-    private $rabbitmqVhost;
+    private string $rabbitmqVhost;
 
-    /** @var string */
-    private $rabbitmqApiBaseUrl;
+    private string $rabbitmqApiBaseUrl;
 
-    /** @var RabbitMq\ManagementApi\Client */
-    private $rabbitmqManagementClient;
+    private RabbitMq\ManagementApi\Client $rabbitmqManagementClient;
 
     public function __construct(
         LoggerInterface $logger,

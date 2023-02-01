@@ -22,26 +22,22 @@ use Psr\Log\LoggerInterface;
  */
 class QueueTaskDispatcher
 {
-    /** @var EntityManager */
-    protected $em;
+    protected EntityManager $em;
 
-    /** @var LoggerInterface */
-    protected $logger;
+    protected LoggerInterface $logger;
 
-    /** @var ValidatorInterface */
-    protected $validator;
+    protected ValidatorInterface $validator;
 
-    /** @var UuidFactory */
-    protected $uuidGenerator;
+    protected UuidFactory $uuidGenerator;
 
     /** @var ProducerInterface This must be a producer that uses the default RabbitMQ's "(AMQP default)" exchange. */
-    protected $defaultRabbitMqProducer;
+    protected ProducerInterface $defaultRabbitMqProducer;
 
     /** @var array Of structure { [queuePayloadSplObjectHash: string]: ScheduledQueueTask; } */
-    protected $payloadsDelayedUntilNextDoctrineFlush;
+    protected array $payloadsDelayedUntilNextDoctrineFlush;
 
     /** @var bool Used to prevent dispatching the on-doctrine-flush payloads recursively */
-    private $dispatchingOnDoctrineFlushPayloads;
+    private bool $dispatchingOnDoctrineFlushPayloads;
 
     /**
      * {@inheritdoc}
@@ -205,7 +201,7 @@ class QueueTaskDispatcher
     /**
      * @internal Don't use this method.
      */
-    public function dispatchOnDoctrineFlushPayloads()
+    public function dispatchOnDoctrineFlushPayloads(): void
     {
         if (
             !$this->payloadsDelayedUntilNextDoctrineFlush
@@ -247,7 +243,7 @@ class QueueTaskDispatcher
         $this->dispatchingOnDoctrineFlushPayloads = false;
     }
 
-    private function throwIfPayloadInvalid(AbstractQueuePayload $payload)
+    private function throwIfPayloadInvalid(AbstractQueuePayload $payload): void
     {
         $errors = $this->validator->validate($payload);
 

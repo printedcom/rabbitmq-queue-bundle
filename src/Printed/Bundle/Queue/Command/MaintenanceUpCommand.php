@@ -12,8 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class MaintenanceUpCommand extends Command
 {
-    /** @var QueueMaintenance */
-    private $queueMaintenance;
+    private QueueMaintenance $queueMaintenance;
 
     public function __construct(QueueMaintenance $queueMaintenance)
     {

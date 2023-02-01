@@ -17,8 +17,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class MaintenanceWaitForRunningCommand extends Command
 {
-    /** @var QueueMaintenance */
-    private $queueMaintenance;
+    private QueueMaintenance $queueMaintenance;
 
     /** @var Connection */
     private $dbalConnection;

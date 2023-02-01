@@ -13,12 +13,12 @@ The bundle piggybacks off of the `php-amqplib/rabbitmq-bundle` bundle.
 
 ## Setup & Dependencies
 
-* PHP `>=7.0`
-* https://packagist.org/packages/symfony/symfony `^3.4|^4.0`
-* https://packagist.org/packages/doctrine/orm `~2.5`
+* PHP `>=8.1`
+* https://packagist.org/packages/symfony/symfony `^6.0`
+* https://packagist.org/packages/doctrine/orm `~2.14`
 * https://packagist.org/packages/monolog/monolog `~1.11`
 * https://packagist.org/packages/ramsey/uuid `~3.4`
-* https://packagist.org/packages/php-amqplib/rabbitmq-bundle `~1.6`
+* https://packagist.org/packages/php-amqplib/rabbitmq-bundle `~2.11`
 
 We assume that you are familiar with the `php-amqplib/rabbitmq-bundle` configuration and setup.
 
