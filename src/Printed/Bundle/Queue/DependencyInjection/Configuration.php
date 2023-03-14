@@ -32,9 +32,6 @@ class Configuration implements ConfigurationInterface
                             ->info('Name of the service, that acts as a default producer in RabbitMQ')
                             ->defaultValue('default_rabbitmq_producer')
                         ->end()
-                        ->scalarNode('application_doctrine_entity_manager__service_name')
-                            ->defaultNull()
-                        ->end()
                         ->enumNode('queue_maintenance_strategy__service_name')
                             ->values([
                                 'printed.bundle.queue.service.queue_maintenance.cache_queue_maintenance_strategy',

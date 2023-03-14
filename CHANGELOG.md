@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [5.1.0] - 2023-03-14
+### Fixed
+- Fix supplying dedicated entity manager to the abstract queue consumer not actually working due to the QueueTask
+  itself being retrieved using the main application's entity manager.
+
+### Changed
+- Redo how one can supply a dedicated entity manager to the abstract queue consumer.
+
+### Breaking changes
+- The protected field `AbstractQueueConsumer::$repository` was removed. It's unlikely that it was used in a subclass.
+- The `application_doctrine_entity_manager__service_name` bundle configuration option was removed. Please check the readme
+  on how one can supply a dedicated entity manager to the abstract queue consumer now. It's unlikely that this option was used
+  due to it not actually working, as mentioned in the "Fixed" section above.
+
 ## [5.0.1] - 2020-04-03
 ### Added
 - The MakeServicesPublicAsALastResortCompilerPass that allows to make some of the
