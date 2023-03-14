@@ -25,7 +25,6 @@ class QueueExtension extends Extension
         $loader->load('services.yml');
 
         $this->defineQueueBundleOptions($config, $container);
-        $this->defineClientApplicationEntityManager($config, $container);
 
         $this->configureQueueServicesWithDynamicDependencies($config, $container);
     }
@@ -39,31 +38,6 @@ class QueueExtension extends Extension
     {
         $queueBundleOptionsDefinition = $container->getDefinition('printed.bundle.queue.service.queue_bundle_options');
         $queueBundleOptionsDefinition->setArgument(0, $bundleConfig['options']);
-    }
-
-    private function defineClientApplicationEntityManager(array $bundleConfig, ContainerBuilder $container)
-    {
-        $clientApplicationEntityManagerServiceName = $bundleConfig['options']['application_doctrine_entity_manager__service_name'];
-
-        /*
-         * In any case, remove this bundle's service definition. It eventually is either an alias or not defined.
-         */
-        $container->removeDefinition('printed.bundle.queue.service.client.application_entity_manager');
-
-        /*
-         * Case when null: nothing to alias.
-         */
-        if (!$clientApplicationEntityManagerServiceName) {
-            return;
-        }
-
-        /*
-         * Alias this bundle's service with the supplied entity manager.
-         */
-        $container->setAlias(
-            'printed.bundle.queue.service.client.application_entity_manager',
-            $clientApplicationEntityManagerServiceName
-        );
     }
 
     private function configureQueueServicesWithDynamicDependencies(array $bundleConfig, ContainerBuilder $container)
