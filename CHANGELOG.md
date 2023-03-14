@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [5.1.0] - 2023-03-14
 ### Fixed
 - Fix supplying dedicated entity manager to the abstract queue consumer not actually working due to the QueueTask
   itself being retrieved using the main application's entity manager.
