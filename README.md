@@ -43,11 +43,6 @@ printedcom_rabbitmq_queue_bundle:
   options:
     # Name of the service that acts as a default producer in RabbitMQ. See below this code snippet for details.
     default_rabbitmq_producer_name: 'default_rabbitmq_producer'
-  
-    # Doctrine's EntityManager needs to be cleared between consumers' runs. `AbstractQueueConsumer`
-    # clears its own EntityManager, but if you have a separate EntityManager for your application
-    # as well then put the name of the service that points to that EntityManager here.
-    application_doctrine_entity_manager__service_name: ~
 
     # Name of the service that implements the queue maintenance mode. Use one of the following:
     #
@@ -108,9 +103,45 @@ as the "default" producer in RabbitMQ.
  
 ### Important notice: Use dedicated EntityManager for your consumers.
 
-Please inject subclasses of AbstractQueueConsumer with dedicated EntityManager that is not used by the
-rest of your application. This is needed because AbstractQueueConsumer makes use of that entity manager
-to report errors in the queue tasks entries. It's not possible if the entity manager "Is already closed". 
+AbstractQueueConsumer should ideally use a dedicated and separate EntityManager to process QueueTasks. This is to
+prevent problems with flushing changes to the QueueTasks when the application's default EntityManager stopped being
+operational (e.g. due to the "Is already closed" error, or due to the entity manager's unit of work having been cleared).
+
+To achieve this, use a multi entity manager configuration for the DoctrineBundle, and then supply the dedicated entity
+manager to the constructor of your consumers.
+
+Example configuration:
+```yml
+# DoctrineBundle configuration
+doctrine:
+  # (...)
+  orm:
+    # (...)
+    default_entity_manager: default
+    entity_managers:
+      default:
+        auto_mapping: true
+
+      queue_consumer:
+        mappings:
+          Printed\Bundle\Queue:
+            type: annotation
+            prefix: Printed\Bundle\Queue\Entity
+            dir: '%kernel.project_dir%/vendor/printed/rabbitmq-queue-bundle/src/Printed/Bundle/Queue/Entity'
+
+# Registering your queue consumer e.g. in services.yml
+acme.queue.consumer.my_queue_task1:
+  class: 'Acme\Bundle\Queue\Consumer\MyQueueTask1QueueConsumer'
+  arguments:
+    - '@doctrine.orm.default_entity_manager'
+    - '@validator'
+    - '@monolog.logger'
+    - '@Psr\Container\ContainerInterface'
+    - '@printed.bundle.queue.service.service_container_parameters'
+    - '@doctrine.orm.queue_consumer_entity_manager'
+  tags:
+    - container.service_subscriber
+```
 
 ## Usage
 
