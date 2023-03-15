@@ -2,6 +2,7 @@
 
 namespace Printed\Bundle\Queue\Queue;
 
+use Printed\Bundle\Queue\Entity\QueueTask;
 use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
 use Printed\Bundle\Queue\Enum\QueueTaskStatus;
 use Printed\Bundle\Queue\Exception\Consumer\QueueFatalErrorException;
@@ -44,14 +45,11 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
      */
     const TASK_FAILED = false;
 
-    /** @var EntityManager */
+    /** @var EntityManager This is always the application's entity manager */
     protected $em;
 
     /** @var ValidatorInterface */
     protected $validator;
-
-    /** @var QueueTaskRepository */
-    protected $repository;
 
     /** @var LoggerInterface */
     protected $logger;
@@ -69,8 +67,20 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
     /** @var AMQPMessage */
     protected $message;
 
-    /** @var QueueTaskInterface */
+    /**
+     * This entity might be managed by a separate entity manager. Treat it as read-only in your subclass, and use
+     * this abstract class' protected methods to make changes to it.
+     *
+     * @var QueueTaskInterface
+     */
     protected $task;
+
+    /**
+     * @var EntityManager The (potentially dedicated) entity manager to be used by this abstract class only. Part of
+     *  preventing the "closed" application's entity manager from influencing the ability of this abstract class to
+     *  track failed queue tasks correctly.
+     */
+    private $internalQueueConsumerEntityManager;
 
     /** @var QueueBundleOptions */
     private $queueBundleOptions;
@@ -92,18 +102,23 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
         ValidatorInterface $validator,
         LoggerInterface $logger,
         ContainerInterface $locator,
-        ServiceContainerParameters $containerParameters
+        ServiceContainerParameters $containerParameters,
+        ?EntityManagerInterface $internalQueueConsumerEntityManager = null
     ) {
         $this->em = $em;
         $this->validator = $validator;
         $this->logger = $logger;
         $this->locator = $locator;
         $this->containerParameters = $containerParameters;
-        $this->repository = $locator->get('printed.bundle.queue.repository.queue_task');
         $this->queueBundleOptions = $locator->get('printed.bundle.queue.service.queue_bundle_options');
 
         $this->newDeploymentsDetector = $locator->get('printed.bundle.queue.service.new_deployments_detector');
         $this->startUpDeploymentStamp = $this->newDeploymentsDetector->getCurrentDeploymentStamp();
+
+        /*
+         * Elect the entity manager to use to process instances of queue task.
+         */
+        $this->internalQueueConsumerEntityManager = $internalQueueConsumerEntityManager ?: $em;
 
         $this->startUpDateTime = new \DateTime();
     }
@@ -122,7 +137,6 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
             'printed.bundle.queue.service.new_deployments_detector' => NewDeploymentsDetector::class,
             'printed.bundle.queue.service.queue_maintenance' => QueueMaintenance::class,
             'printed.bundle.queue.helper.queue_task_helper' => QueueTaskHelper::class,
-            'printed.bundle.queue.service.client.application_entity_manager' => '?'.EntityManagerInterface::class,
         ];
     }
 
@@ -217,7 +231,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
 
         //  Attempt to retrieve the task from the database.
         //  The task ID was given as the message body.
-        $this->task = $this->repository->find($this->message->body);
+        $this->task = $this->internalQueueConsumerEntityManager->find(QueueTask::class, $this->message->body);
 
         //  If the task doesn't exist then we have a problem.
         //  We can throw a fit here but no-one will hear it, for now critical log and get out.
@@ -318,8 +332,8 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
                 throw new \RuntimeException("Unexpected queue task status: `{$queueTaskStatus}`");
         }
 
-        $this->em->persist($this->task);
-        $this->em->flush($this->task);
+        $this->internalQueueConsumerEntityManager->persist($this->task);
+        $this->internalQueueConsumerEntityManager->flush($this->task);
 
         //  Trigger relevant lifecycle events if necessary.
         if (QueueTaskStatus::CANCELLED === $queueTaskStatus) {
@@ -389,7 +403,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
 
         $taskClassName = get_class($this->task);
 
-        $query = $this->em->createQuery("
+        $query = $this->internalQueueConsumerEntityManager->createQuery("
             UPDATE {$taskClassName} t 
             SET t.completionPercentage = :completionPercentage
             WHERE t.id = :taskId
@@ -412,7 +426,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
      */
     protected function throwTaskCancellationExceptionIfCancellationRequested()
     {
-        $this->em->refresh($this->task);
+        $this->internalQueueConsumerEntityManager->refresh($this->task);
 
         if ($this->task->isCancellationRequested()) {
             throw new QueueTaskCancellationException("Queue task `{$this->task->getId()}` is being cancelled.");
@@ -444,8 +458,8 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
         $this->task->setStatus(QueueTaskStatus::FAILED_LIMIT_EXCEEDED);
         $this->task->setCompletedDate(new \DateTime);
 
-        $this->em->persist($this->task);
-        $this->em->flush($this->task);
+        $this->internalQueueConsumerEntityManager->persist($this->task);
+        $this->internalQueueConsumerEntityManager->flush($this->task);
 
         return true;
 
@@ -467,8 +481,8 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
         $this->task->setStatus(QueueTaskStatus::RUNNING);
         $this->task->setStartedDate(new \DateTime);
 
-        $this->em->persist($this->task);
-        $this->em->flush($this->task);
+        $this->internalQueueConsumerEntityManager->persist($this->task);
+        $this->internalQueueConsumerEntityManager->flush($this->task);
 
     }
 
@@ -485,8 +499,8 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
             )
         );
 
-        $this->em->persist($this->task);
-        $this->em->flush($this->task);
+        $this->internalQueueConsumerEntityManager->persist($this->task);
+        $this->internalQueueConsumerEntityManager->flush($this->task);
 
     }
 
@@ -526,17 +540,10 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
      */
     private function clearKnownEntityManagers()
     {
-        $this->em->clear();
+        $this->internalQueueConsumerEntityManager->clear();
 
-        /*
-         * Clear the application's doctrine entity manager, if defined.
-         */
-        $applicationEntityManagerServiceName = 'printed.bundle.queue.service.client.application_entity_manager';
-        if ($this->locator->has($applicationEntityManagerServiceName)) {
-            /** @var EntityManagerInterface $applicationEntityManager */
-            $applicationEntityManager = $this->locator->get($applicationEntityManagerServiceName);
-
-            $applicationEntityManager->clear();
+        if ($this->internalQueueConsumerEntityManager !== $this->em) {
+            $this->em->clear();
         }
     }
 

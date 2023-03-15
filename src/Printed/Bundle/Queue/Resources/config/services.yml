@@ -100,7 +100,3 @@ services:
   printed.bundle.queue.service.uuid:
     class: 'Ramsey\Uuid\UuidFactory'
     public: false
-
-  printed.bundle.queue.service.client.application_entity_manager:
-  # (defined/removed in QueueExtension.php)
-    public: false
