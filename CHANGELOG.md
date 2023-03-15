@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [6.0.0] - 2023-03-15
+### Changed
+- Updated dependencies and update code to work with Symfony ^6.0 and PHP ^8.1.
+
+### Breaking changes
+- PHP >= 8.1
+- Symfony ^6.0
+
 ## [5.1.0] - 2023-03-14
 ### Fixed
 - Fix supplying dedicated entity manager to the abstract queue consumer not actually working due to the QueueTask
