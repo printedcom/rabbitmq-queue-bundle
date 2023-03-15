@@ -30,7 +30,7 @@ class QueueExtension extends Extension
         $this->configureQueueServicesWithDynamicDependencies($config, $container);
     }
 
-    public function getAlias()
+    public function getAlias(): string
     {
         return 'printedcom_rabbitmq_queue_bundle';
     }

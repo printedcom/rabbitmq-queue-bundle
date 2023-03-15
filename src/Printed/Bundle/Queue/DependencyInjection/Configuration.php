@@ -20,9 +20,9 @@ class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root($this->bundleAlias);
-        
+        $treeBuilder = new TreeBuilder($this->bundleAlias);
+        $rootNode = $treeBuilder->getRootNode();
+
         $rootNode
             ->children()
                 ->arrayNode('options')

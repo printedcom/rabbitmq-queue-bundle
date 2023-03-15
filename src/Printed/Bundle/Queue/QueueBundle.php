@@ -11,13 +11,11 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
  */
 class QueueBundle extends Bundle
 {
-
     /**
      * {@inheritdoc}
      */
-    public function getContainerExtension()
+    public function getContainerExtension(): QueueExtension
     {
         return new QueueExtension;
     }
-
 }

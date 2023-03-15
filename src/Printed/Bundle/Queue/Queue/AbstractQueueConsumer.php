@@ -19,9 +19,10 @@ use Doctrine\ORM\EntityManagerInterface;
 
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use PhpAmqpLib\Message\AMQPMessage;
+use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\ServiceSubscriberInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\Service\ServiceSubscriberInterface;
 
 /**
  * An abstract representation of a queue worker (or consumer in RabbitMQ's case).
@@ -58,7 +59,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
     /**
      * Services requested by ::getSubscribedServices() are available in this container.
      *
-     * @var \Psr\Container\ContainerInterface
+     * @var ContainerInterface
      */
     protected $locator;
 
@@ -87,10 +88,10 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
     private $startUpDateTime;
 
     public function __construct(
-        EntityManager $em,
+        EntityManagerInterface $em,
         ValidatorInterface $validator,
         LoggerInterface $logger,
-        \Psr\Container\ContainerInterface $locator,
+        ContainerInterface $locator,
         ServiceContainerParameters $containerParameters
     ) {
         $this->em = $em;
