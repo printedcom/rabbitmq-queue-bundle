@@ -284,22 +284,12 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
             );
         }
 
-        switch ($queueTaskStatus) {
-            case QueueTaskStatus::COMPLETE:
-                $this->updateTaskComplete();
-                break;
-
-            case QueueTaskStatus::FAILED:
-                $this->updateTaskFailed();
-                break;
-
-            case QueueTaskStatus::CANCELLED:
-                $this->updateTaskCancelled();
-                break;
-
-            default:
-                throw new RuntimeException("Unexpected queue task status: `{$queueTaskStatus}`");
-        }
+        match ($queueTaskStatus) {
+            QueueTaskStatus::COMPLETE => $this->updateTaskComplete(),
+            QueueTaskStatus::FAILED => $this->updateTaskFailed(),
+            QueueTaskStatus::CANCELLED => $this->updateTaskCancelled(),
+            default => throw new RuntimeException("Unexpected queue task status: `{$queueTaskStatus}`"),
+        };
 
         $this->internalQueueConsumerEntityManager->persist($this->task);
         $this->internalQueueConsumerEntityManager->flush($this->task);
