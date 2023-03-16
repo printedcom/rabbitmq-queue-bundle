@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Printed\Bundle\Queue\Command;
 
 use Printed\Bundle\Queue\Service\RabbitMqVhostExistenceEnsurer;
@@ -13,21 +15,16 @@ use RabbitMq;
  */
 class EnsureVhostExistsCommand extends Command
 {
-    /** @var RabbitMqVhostExistenceEnsurer */
-    private $rabbitMqVhostExistenceEnsurer;
-
     public function __construct(
-        RabbitMqVhostExistenceEnsurer $rabbitMqVhostExistenceEnsurer
+        private readonly RabbitMqVhostExistenceEnsurer $rabbitMqVhostExistenceEnsurer
     ) {
         parent::__construct();
-
-        $this->rabbitMqVhostExistenceEnsurer = $rabbitMqVhostExistenceEnsurer;
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('queue:ensure-vhost-exists');
         $this->setDescription("Ensures, that a rabbitmq's vhost exists, and that rabbitmq's user can manage it");
@@ -36,13 +33,15 @@ class EnsureVhostExistsCommand extends Command
     /**
      * {@inheritdoc}
      */
-    public function execute(InputInterface $input, OutputInterface $output)
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($output->getVerbosity() === OutputInterface::VERBOSITY_NORMAL) {
             $output->setVerbosity(OutputInterface::VERBOSITY_VERY_VERBOSE);
         }
 
         $this->rabbitMqVhostExistenceEnsurer->ensure();
+
+        return static::SUCCESS;
     }
 
 }

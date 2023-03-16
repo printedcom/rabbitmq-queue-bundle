@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Printed\Bundle\Queue\DependencyInjection\CompilerPass;
 
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -27,12 +29,11 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  */
 final class MakeServicesPublicAsALastResortCompilerPass implements CompilerPassInterface
 {
-    /** @var string[] Service names of services to make public */
-    private $serviceNames;
-
-    public function __construct(array $serviceNames)
+    /**
+     * @param string[] $serviceNames Service names of services to make public
+     */
+    public function __construct(private readonly array $serviceNames = [])
     {
-        $this->serviceNames = $serviceNames;
     }
 
     public function process(ContainerBuilder $container): void

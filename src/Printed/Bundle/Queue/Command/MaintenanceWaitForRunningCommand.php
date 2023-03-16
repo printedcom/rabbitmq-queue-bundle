@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Printed\Bundle\Queue\Command;
 
 use Doctrine\DBAL\Connection;
@@ -17,26 +19,17 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class MaintenanceWaitForRunningCommand extends Command
 {
-    /** @var QueueMaintenance */
-    private $queueMaintenance;
-
-    /** @var Connection */
-    private $dbalConnection;
-
     public function __construct(
-        QueueMaintenance $queueMaintenance,
-        Connection $dbalConnection
+        private readonly QueueMaintenance $queueMaintenance,
+        private readonly Connection $dbalConnection
     ) {
         parent::__construct();
-
-        $this->queueMaintenance = $queueMaintenance;
-        $this->dbalConnection = $dbalConnection;
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('queue:maintenance:wait');
         $this->setDescription('Wait for running tasks to complete and exit');
@@ -49,7 +42,7 @@ class MaintenanceWaitForRunningCommand extends Command
     /**
      * {@inheritdoc}
      */
-    public function execute(InputInterface $input, OutputInterface $output)
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('<info>Monitoring running tasks</info>');
 
@@ -66,7 +59,8 @@ class MaintenanceWaitForRunningCommand extends Command
 
         if (!$this->doesDatabaseExist($dbal)) {
             $output->writeln("<error>The database doesn't exist. This is expected, if the bundle is used for the first time. Otherwise it's a critical error you should investigate.</error>");
-            return;
+
+            return static::FAILURE;
         }
 
         /*
@@ -75,7 +69,8 @@ class MaintenanceWaitForRunningCommand extends Command
          */
         if (!in_array('queue_task', $dbal->getSchemaManager()->listTableNames())) {
             $output->writeln("<error>Couldn't find the queue tasks table in the database. This is expected, if the bundle is used for the first time. Otherwise it's a critical error you should investigate.</error>");
-            return;
+
+            return static::FAILURE;
         }
 
         //  Get the refresh time, this is 3 by default.
@@ -86,7 +81,7 @@ class MaintenanceWaitForRunningCommand extends Command
 
         while (true) {
             //  Find all tasks with running status.
-            $tasks = $dbal->fetchAll(
+            $tasks = $dbal->fetchAllAssociative(
                 'SELECT id, queue_name FROM queue_task WHERE status = :status_running',
                 [ 'status_running' => QueueTaskStatus::RUNNING ]
             );
@@ -95,7 +90,8 @@ class MaintenanceWaitForRunningCommand extends Command
             //  If there are none we can exit the command.
             if ($count === 0) {
                 $output->writeln(sprintf('<info>There are no tasks in running state!</info>'));
-                return;
+
+                return static::SUCCESS;
             }
 
             $table->setRows([]);
@@ -162,7 +158,7 @@ class MaintenanceWaitForRunningCommand extends Command
 
         $tmpConnection = DriverManager::getConnection($params);
 
-        $doesDatabaseExist = in_array($name, $tmpConnection->getSchemaManager()->listDatabases());
+        $doesDatabaseExist = in_array($name, $tmpConnection->createSchemaManager()->listDatabases());
 
         $tmpConnection->close();
 

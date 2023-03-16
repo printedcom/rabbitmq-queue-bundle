@@ -8,12 +8,8 @@ use Printed\Bundle\Queue\Repository\QueueTaskRepository;
 
 class QueueTaskHelper
 {
-    /** @var QueueTaskRepository */
-    private $queueTaskRepository;
-
-    public function __construct(QueueTaskRepository $queueTaskRepository)
+    public function __construct(private readonly QueueTaskRepository $queueTaskRepository)
     {
-        $this->queueTaskRepository = $queueTaskRepository;
     }
 
     /**
@@ -23,6 +19,7 @@ class QueueTaskHelper
     public function getPayload(QueueTaskInterface $task): AbstractQueuePayload
     {
         $class = $task->getPayloadClass();
+
         return new $class($task->getPayload());
     }
 
@@ -39,7 +36,7 @@ class QueueTaskHelper
         array $taskPublicIds,
         string $queueName = null,
         array $queueTaskPayloadCriteria = []
-    ) {
+    ): void {
         $tasks = $this->queueTaskRepository->findByPublicIdsAndQueueNameOrThrow(
             $taskPublicIds,
             $queueName,

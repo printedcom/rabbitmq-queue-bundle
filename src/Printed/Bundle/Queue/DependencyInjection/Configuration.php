@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Printed\Bundle\Queue\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -7,18 +9,14 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 class Configuration implements ConfigurationInterface
 {
-    /** @var string */
-    private $bundleAlias;
-
-    public function __construct(string $bundleAlias)
+    public function __construct(private readonly string $bundleAlias)
     {
-        $this->bundleAlias = $bundleAlias;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function getConfigTreeBuilder()
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder($this->bundleAlias);
         $rootNode = $treeBuilder->getRootNode();

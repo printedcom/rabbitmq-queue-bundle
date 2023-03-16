@@ -1,42 +1,37 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Printed\Bundle\Queue\Service;
 
 use Printed\Bundle\Queue\ValueObject\QueueBundleOptions;
 use Psr\Log\LoggerInterface;
 use RabbitMq;
+use RabbitMq\ManagementApi\Client as RabbitMqManagementClient;
+use RuntimeException;
 
 class RabbitMqVhostExistenceEnsurer
 {
-    /** @var LoggerInterface */
-    private $logger;
+    private ?string $rabbitmqUser;
 
-    /** @var string */
-    private $rabbitmqUser;
+    private ?string $rabbitmqPassword;
 
-    /** @var string */
-    private $rabbitmqPassword;
+    private ?string $rabbitmqVhost;
 
-    /** @var string */
-    private $rabbitmqVhost;
+    private ?string $rabbitmqApiBaseUrl;
 
-    /** @var string */
-    private $rabbitmqApiBaseUrl;
-
-    /** @var RabbitMq\ManagementApi\Client */
-    private $rabbitmqManagementClient;
+    private RabbitMqManagementClient $rabbitmqManagementClient;
 
     public function __construct(
-        LoggerInterface $logger,
+        private readonly LoggerInterface $logger,
         QueueBundleOptions $queueBundleOptions
     ) {
-        $this->logger = $logger;
         $this->rabbitmqUser = $queueBundleOptions->get('rabbitmq_user');
         $this->rabbitmqPassword = $queueBundleOptions->get('rabbitmq_password');
         $this->rabbitmqVhost = $queueBundleOptions->get('rabbitmq_vhost');
         $this->rabbitmqApiBaseUrl = $queueBundleOptions->get('rabbitmq_api_base_url');
 
-        $this->rabbitmqManagementClient = new RabbitMq\ManagementApi\Client(
+        $this->rabbitmqManagementClient = new RabbitMqManagementClient(
             null,
             $this->rabbitmqApiBaseUrl,
             $this->rabbitmqUser,
@@ -44,7 +39,7 @@ class RabbitMqVhostExistenceEnsurer
         );
     }
 
-    public function ensure()
+    public function ensure(): void
     {
         $rabbitmqUser = $this->rabbitmqUser;
         $rabbitmqVhost = $this->rabbitmqVhost;
@@ -57,7 +52,7 @@ class RabbitMqVhostExistenceEnsurer
         $this->logger->info('Done.');
     }
 
-    private function ensureVhostExists(string $rabbitmqVhost)
+    private function ensureVhostExists(string $rabbitmqVhost): void
     {
         $vhostOrError = $this->rabbitmqManagementClient->vhosts()->get($rabbitmqVhost);
 
@@ -73,7 +68,7 @@ class RabbitMqVhostExistenceEnsurer
          */
         $responseErrorType = $vhostOrError['error'] ?? '(undefined)';
         if ($responseErrorType !== 'Object Not Found') {
-            throw new \RuntimeException(sprintf(
+            throw new RuntimeException(sprintf(
                 "Expected rabbitmq's api not found error, but got: `%s`. Full response: `%s`",
                 $responseErrorType,
                 json_encode($vhostOrError)
@@ -86,7 +81,7 @@ class RabbitMqVhostExistenceEnsurer
         $response = $this->rabbitmqManagementClient->vhosts()->create($rabbitmqVhost);
 
         if ($response['error'] ?? false) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 sprintf("Couldn't create rabbitmq vhost. Error: `%s`", json_encode($response))
             );
         }
@@ -94,7 +89,7 @@ class RabbitMqVhostExistenceEnsurer
         $this->logger->info("Created rabbitmq vhost: `{$rabbitmqVhost}`");
     }
 
-    private function ensureVhostUserPermissionsSet(string $rabbitmqVhost, string $rabbitmqUser)
+    private function ensureVhostUserPermissionsSet(string $rabbitmqVhost, string $rabbitmqUser): void
     {
         $expectedPermissions = [
             'user' => $rabbitmqUser,
@@ -127,12 +122,11 @@ class RabbitMqVhostExistenceEnsurer
         );
 
         if ($response['error'] ?? false) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 sprintf("Couldn't create rabbitmq vhost permissions. Error: `%s`", json_encode($response))
             );
         }
 
         $this->logger->info("Created permissions for rabbitmq vhost and user: `{$rabbitmqVhost}`, `{$rabbitmqUser}`");
     }
-
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Printed\Bundle\Queue\Queue;
 
 use Symfony\Component\Validator\Constraints as Assert;
@@ -82,22 +84,8 @@ abstract class AbstractQueuePayload
      */
     public function getProperties(): array
     {
-        $payloadProperties = get_object_vars($this);
-
-        /*
-         * Filter private/internal properties starting with "__".
-         *
-         * array_filter() wasn't used due to lack of support of iterating over hashmap keys in php 5.5.
-         */
-        $filteredPayloadProperties = [];
-        foreach ($payloadProperties as $key => $value) {
-            if (0 === strpos($key, '__')) {
-                continue;
-            }
-
-            $filteredPayloadProperties[$key] = $value;
-        }
-
-        return $filteredPayloadProperties;
+        return array_filter(get_object_vars($this), function ($value, string $key) {
+            return !str_starts_with($key, '__');
+        }, ARRAY_FILTER_USE_BOTH);
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Printed\Bundle\Queue\Service\NewDeploymentsDetector;
 
 use Doctrine\Common\Cache\Cache;
@@ -16,18 +18,10 @@ class CacheNewDeploymentsDetectorStrategy implements NewDeploymentsDetectorStrat
 {
     const CACHE_KEY = 'printed_rabbitmq_queue_bundle_deployment_stamp';
 
-    /** @var Cache */
-    private $cache;
-
-    /** @var LoggerInterface */
-    private $logger;
-
     public function __construct(
-        Cache $cache,
-        LoggerInterface $logger
+        private readonly Cache $cache,
+        private readonly LoggerInterface $logger
     ) {
-        $this->cache = $cache;
-        $this->logger = $logger;
     }
 
     public function getCurrentDeploymentStamp(): string
@@ -35,7 +29,7 @@ class CacheNewDeploymentsDetectorStrategy implements NewDeploymentsDetectorStrat
         return $this->cache->fetch(static::CACHE_KEY) ?: 'unset';
     }
 
-    public function setCurrentDeploymentStamp(string $deploymentStamp)
+    public function setCurrentDeploymentStamp(string $deploymentStamp): void
     {
         $result = $this->cache->save(static::CACHE_KEY, $deploymentStamp);
 

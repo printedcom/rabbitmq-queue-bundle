@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Printed\Bundle\Queue\DependencyInjection;
 
 use Symfony\Component\Config\FileLocator;
@@ -16,7 +18,7 @@ class QueueExtension extends Extension
     /**
      * {@inheritdoc}
      */
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container): void
     {
         $configuration = new Configuration($this->getAlias());
         $config = $this->processConfiguration($configuration, $configs);
@@ -34,13 +36,13 @@ class QueueExtension extends Extension
         return 'printedcom_rabbitmq_queue_bundle';
     }
 
-    private function defineQueueBundleOptions(array $bundleConfig, ContainerBuilder $container)
+    private function defineQueueBundleOptions(array $bundleConfig, ContainerBuilder $container): void
     {
         $queueBundleOptionsDefinition = $container->getDefinition('printed.bundle.queue.service.queue_bundle_options');
         $queueBundleOptionsDefinition->setArgument(0, $bundleConfig['options']);
     }
 
-    private function configureQueueServicesWithDynamicDependencies(array $bundleConfig, ContainerBuilder $container)
+    private function configureQueueServicesWithDynamicDependencies(array $bundleConfig, ContainerBuilder $container): void
     {
         /*
          * QueueMaintenance.php

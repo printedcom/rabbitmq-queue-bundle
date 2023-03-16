@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Printed\Bundle\Queue\Service;
 
 use Symfony\Component\DependencyInjection\Container;

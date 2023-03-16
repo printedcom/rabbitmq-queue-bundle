@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Printed\Bundle\Queue\Service\QueueMaintenance;
 
 use Doctrine\Common\Cache\Cache;
@@ -42,18 +44,10 @@ class CacheQueueMaintenanceStrategy implements QueueMaintenanceStrategyInterface
 {
     const CACHE_KEY = 'printed_rabbitmq_queue_bundle_queue_maintenance_mode_enabled_marker';
 
-    /** @var Cache */
-    private $cache;
-
-    /** @var LoggerInterface */
-    private $logger;
-
     public function __construct(
-        Cache $cache,
-        LoggerInterface $logger
+        private readonly Cache $cache,
+        private readonly LoggerInterface $logger
     ) {
-        $this->cache = $cache;
-        $this->logger = $logger;
     }
 
     /**
@@ -67,7 +61,7 @@ class CacheQueueMaintenanceStrategy implements QueueMaintenanceStrategyInterface
     /**
      * @inheritdoc
      */
-    public function enable()
+    public function enable(): void
     {
         $result = $this->cache->save(static::CACHE_KEY, time());
 
@@ -85,7 +79,7 @@ class CacheQueueMaintenanceStrategy implements QueueMaintenanceStrategyInterface
     /**
      * @inheritdoc
      */
-    public function disable()
+    public function disable(): void
     {
         $result = $this->cache->delete(static::CACHE_KEY);
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Printed\Bundle\Queue\Exception;
 
 /**
@@ -8,14 +10,12 @@ namespace Printed\Bundle\Queue\Exception;
  */
 class CouldNotFindAllRequestedQueueTasksException extends \RuntimeException
 {
-    /** @var string[] */
-    private $missingTaskIds;
-
-    public function __construct(string $message, array $missingTaskIds)
+    /**
+     * @param string[] $missingTaskIds
+     */
+    public function __construct(string $message, private readonly array $missingTaskIds)
     {
         parent::__construct($message);
-
-        $this->missingTaskIds = $missingTaskIds;
     }
 
     /**
