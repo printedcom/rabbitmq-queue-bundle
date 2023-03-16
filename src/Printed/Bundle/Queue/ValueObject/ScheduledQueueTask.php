@@ -3,6 +3,7 @@
 namespace Printed\Bundle\Queue\ValueObject;
 
 use Closure;
+use InvalidArgumentException;
 use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
 use Printed\Bundle\Queue\Queue\AbstractQueuePayload;
 use RuntimeException;
@@ -25,26 +26,22 @@ class ScheduledQueueTask
      *
      * That's impossible for both the payload and the payload creator function not to be set.
      *
-     * @param AbstractQueuePayload|null $payload
      * @param Closure|null $payloadCreatorFn See QueueTaskDispatcher::dispatch()
      * @param QueueTaskInterface|null $queueTask Defined, when the task is dispatched
      */
     public function __construct(
         private ?AbstractQueuePayload $payload = null,
         private readonly ?Closure $payloadCreatorFn = null,
-        private ?QueueTaskInterface $queueTask = null
+        private ?QueueTaskInterface $queueTask = null,
     ) {
         if (!$payload && !$payloadCreatorFn) {
-            throw new \InvalidArgumentException(sprintf(
+            throw new InvalidArgumentException(sprintf(
                 "Can't construct `%s` without providing either the queue payload or the queue payload creator function",
                 get_class()
             ));
         }
     }
 
-    /**
-     * @return AbstractQueuePayload|null
-     */
     public function getPayload(): ?AbstractQueuePayload
     {
         return $this->payload;
@@ -59,9 +56,6 @@ class ScheduledQueueTask
         return $this->payload;
     }
 
-    /**
-     * @return callable|null
-     */
     public function getPreQueueTaskDispatchFn(): ?callable
     {
         return $this->preQueueTaskDispatchFn;

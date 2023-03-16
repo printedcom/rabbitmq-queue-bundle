@@ -40,7 +40,7 @@ class QueueTaskDispatcher
         protected LoggerInterface $logger,
         protected ValidatorInterface $validator,
         protected ProducerInterface $defaultRabbitMqProducer,
-        protected UuidFactory $uuidGenerator
+        protected UuidFactory $uuidGenerator,
     ) {
     }
 

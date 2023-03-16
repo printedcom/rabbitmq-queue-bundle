@@ -23,7 +23,7 @@ class RequeueTaskCommand extends Command
         private readonly LoggerInterface $logger,
         private readonly QueueTaskDispatcher $queueTaskDispatcher,
         private readonly QueueTaskHelper $queueTaskHelper,
-        private readonly QueueTaskRepository $queueTaskRepository
+        private readonly QueueTaskRepository $queueTaskRepository,
     ) {
         parent::__construct();
     }

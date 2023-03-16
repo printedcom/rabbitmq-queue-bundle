@@ -19,7 +19,7 @@ class StoreNewDeploymentStampCommand extends Command
 {
     public function __construct(
         private readonly LoggerInterface $logger,
-        private readonly NewDeploymentsDetector $newDeploymentsDetector
+        private readonly NewDeploymentsDetector $newDeploymentsDetector,
     ) {
         parent::__construct();
     }

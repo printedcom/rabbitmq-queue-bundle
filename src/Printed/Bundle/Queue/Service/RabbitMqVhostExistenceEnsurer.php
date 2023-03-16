@@ -24,7 +24,7 @@ class RabbitMqVhostExistenceEnsurer
 
     public function __construct(
         private readonly LoggerInterface $logger,
-        QueueBundleOptions $queueBundleOptions
+        QueueBundleOptions $queueBundleOptions,
     ) {
         $this->rabbitmqUser = $queueBundleOptions->get('rabbitmq_user');
         $this->rabbitmqPassword = $queueBundleOptions->get('rabbitmq_password');
@@ -35,7 +35,7 @@ class RabbitMqVhostExistenceEnsurer
             null,
             $this->rabbitmqApiBaseUrl,
             $this->rabbitmqUser,
-            $this->rabbitmqPassword
+            $this->rabbitmqPassword,
         );
     }
 
@@ -71,7 +71,7 @@ class RabbitMqVhostExistenceEnsurer
             throw new RuntimeException(sprintf(
                 "Expected rabbitmq's api not found error, but got: `%s`. Full response: `%s`",
                 $responseErrorType,
-                json_encode($vhostOrError)
+                json_encode($vhostOrError),
             ));
         }
 
@@ -118,7 +118,7 @@ class RabbitMqVhostExistenceEnsurer
                 'configure' => $expectedPermissions['configure'],
                 'write' => $expectedPermissions['write'],
                 'read' => $expectedPermissions['read'],
-            ]
+            ],
         );
 
         if ($response['error'] ?? false) {

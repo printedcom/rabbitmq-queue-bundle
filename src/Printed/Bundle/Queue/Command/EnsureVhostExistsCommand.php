@@ -16,7 +16,7 @@ use RabbitMq;
 class EnsureVhostExistsCommand extends Command
 {
     public function __construct(
-        private readonly RabbitMqVhostExistenceEnsurer $rabbitMqVhostExistenceEnsurer
+        private readonly RabbitMqVhostExistenceEnsurer $rabbitMqVhostExistenceEnsurer,
     ) {
         parent::__construct();
     }

@@ -21,7 +21,7 @@ class MaintenanceWaitForRunningCommand extends Command
 {
     public function __construct(
         private readonly QueueMaintenance $queueMaintenance,
-        private readonly Connection $dbalConnection
+        private readonly Connection $dbalConnection,
     ) {
         parent::__construct();
     }

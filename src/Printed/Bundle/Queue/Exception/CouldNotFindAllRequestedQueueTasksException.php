@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Printed\Bundle\Queue\Exception;
 
+use RuntimeException;
+
 /**
  * Thrown, when queue task repository couldn't find all requested tasks in
  * the database.
  */
-class CouldNotFindAllRequestedQueueTasksException extends \RuntimeException
+class CouldNotFindAllRequestedQueueTasksException extends RuntimeException
 {
     /**
      * @param string[] $missingTaskIds

@@ -6,6 +6,7 @@ namespace Printed\Bundle\Queue\Service\QueueMaintenance;
 
 use Doctrine\Common\Cache\Cache;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 
 /**
  * Class CacheQueueMaintenanceStrategy
@@ -46,7 +47,7 @@ class CacheQueueMaintenanceStrategy implements QueueMaintenanceStrategyInterface
 
     public function __construct(
         private readonly Cache $cache,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -69,7 +70,7 @@ class CacheQueueMaintenanceStrategy implements QueueMaintenanceStrategyInterface
             return;
         }
 
-        throw new \RuntimeException(join(' ', [
+        throw new RuntimeException(join(' ', [
             "Couldn't enable queue maintenance mode, because saving the maintenance marker in",
             'cache server failed for unknown reason. Please check, whether the cache server is running',
             'and whether your cache configuration is correct.',

@@ -19,12 +19,10 @@ abstract class AbstractQueuePayload
      * Bump this version in child classes to allow for an easy way to validate whether
      * a payload is from a legacy worker. Imagine the deployment process.
      *
-     * @var int
-     *
      * @Assert\NotBlank()
      * @Assert\Type(type="integer")
      */
-    protected $version = 1;
+    protected int $version = 1;
 
     /**
      * Queue message properties passed-through to OldSound\RabbitMqBundle\RabbitMq\ProducerInterface::publish()::$additionalProperties
@@ -33,10 +31,8 @@ abstract class AbstractQueuePayload
      * constants.
      *
      * This variable makes sense only during dispatching/publishing a queue task payload. Otherwise, it's always empty.
-     *
-     * @var array
      */
-    private $__queueMessageProperties;
+    private array $__queueMessageProperties;
 
     /**
      * Return the destination queue name.
@@ -69,8 +65,6 @@ abstract class AbstractQueuePayload
 
     /**
      * Return the payload version.
-     *
-     * @return int
      */
     public function getVersion(): int
     {
@@ -79,8 +73,6 @@ abstract class AbstractQueuePayload
 
     /**
      * Return all the properties for serialisation.
-     *
-     * @return array
      */
     public function getProperties(): array
     {

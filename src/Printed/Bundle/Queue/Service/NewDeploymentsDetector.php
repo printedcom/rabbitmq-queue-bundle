@@ -9,7 +9,7 @@ use Printed\Bundle\Queue\Service\NewDeploymentsDetector\NewDeploymentsDetectorSt
 class NewDeploymentsDetector
 {
     public function __construct(
-        private readonly NewDeploymentsDetectorStrategyInterface $newDeploymentsDetectorStrategy
+        private readonly NewDeploymentsDetectorStrategyInterface $newDeploymentsDetectorStrategy,
     ) {
     }
 

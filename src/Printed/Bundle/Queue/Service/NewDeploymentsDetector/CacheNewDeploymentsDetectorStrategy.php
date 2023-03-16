@@ -20,7 +20,7 @@ class CacheNewDeploymentsDetectorStrategy implements NewDeploymentsDetectorStrat
 
     public function __construct(
         private readonly Cache $cache,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
     ) {
     }
 

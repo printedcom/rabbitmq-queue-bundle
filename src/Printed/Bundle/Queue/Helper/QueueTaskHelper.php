@@ -12,10 +12,6 @@ class QueueTaskHelper
     {
     }
 
-    /**
-     * @param QueueTaskInterface $task
-     * @return AbstractQueuePayload
-     */
     public function getPayload(QueueTaskInterface $task): AbstractQueuePayload
     {
         $class = $task->getPayloadClass();
@@ -29,18 +25,16 @@ class QueueTaskHelper
      * Learn about $queueTaskPayloadCriteria in QueueTaskRepository.
      *
      * @param string[] $taskPublicIds
-     * @param string|null $queueName
-     * @param array $queueTaskPayloadCriteria
      */
     public function requestTasksCancellationOrThrow(
         array $taskPublicIds,
-        string $queueName = null,
-        array $queueTaskPayloadCriteria = []
+        ?string $queueName = null,
+        array $queueTaskPayloadCriteria = [],
     ): void {
         $tasks = $this->queueTaskRepository->findByPublicIdsAndQueueNameOrThrow(
             $taskPublicIds,
             $queueName,
-            $queueTaskPayloadCriteria
+            $queueTaskPayloadCriteria,
         );
 
         foreach ($tasks as $task) {

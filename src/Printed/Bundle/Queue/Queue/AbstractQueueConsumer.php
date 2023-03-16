@@ -65,28 +65,26 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
      */
     private string $startUpDeploymentStamp;
 
+    /** The time the consumer were constructed. */
+    private readonly DateTime $startUpDateTime;
+
     /**
      * @param EntityManagerInterface $em This is always the application's entity manager
-     * @param ValidatorInterface $validator
-     * @param LoggerInterface $logger
      * @param ContainerInterface $locator Services requested by ::getSubscribedServices() are available in this container.
-     * @param ServiceContainerParameters $containerParameters
      * @param EntityManagerInterface|null $internalQueueConsumerEntityManager The (potentially dedicated) entity manager to be used by this abstract class only. Part of
      *  preventing the "closed" application's entity manager from influencing the ability of this abstract class to
      *  track failed queue tasks correctly.
-     * @param DateTime $startUpDateTime The time the consumer were constructed.
      *
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws \Psr\Container\NotFoundExceptionInterface
      */
     public function __construct(
-       protected EntityManagerInterface $em,
-       protected ValidatorInterface $validator,
-       protected LoggerInterface $logger,
-       protected ContainerInterface $locator,
-       protected ServiceContainerParameters $containerParameters,
-       protected ?EntityManagerInterface $internalQueueConsumerEntityManager = null,
-       private readonly DateTime $startUpDateTime = new DateTime(),
+        protected EntityManagerInterface $em,
+        protected ValidatorInterface $validator,
+        protected LoggerInterface $logger,
+        protected ContainerInterface $locator,
+        protected ServiceContainerParameters $containerParameters,
+        protected ?EntityManagerInterface $internalQueueConsumerEntityManager = null,
     ) {
         $this->queueBundleOptions = $locator->get('printed.bundle.queue.service.queue_bundle_options');
 
@@ -97,6 +95,8 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
          * Elect the entity manager to use to process instances of queue task.
          */
         $this->internalQueueConsumerEntityManager = $internalQueueConsumerEntityManager ?: $em;
+
+        $this->startUpDateTime = new DateTime();
     }
 
     public static function getSubscribedServices(): array
@@ -126,10 +126,6 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
      * * {@link TASK_FAILED}
      * * {@link TASK_COMPLETE}
      *
-     * @param AbstractQueuePayload $payload
-     *
-     * @return bool
-     *
      * @throws QueueFatalErrorException
      */
     abstract public function run(AbstractQueuePayload $payload): bool;
@@ -137,25 +133,18 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
     /**
      * Return the number of attempts the task will be given before it is marked as failed and dropped from
      * the queue. When hit the queue will be marked in the database with failed because of limit.
-     *
-     * @return int
      */
     public function getAttemptLimit(): int
     {
         return 1;
     }
 
-    /**
-     * @param array $data
-     *
-     * @return array
-     */
     public function getLoggerContext(array $data = []): array
     {
         return array_merge(
             [
                 'time' => time(),
-                'consumer' => get_called_class()
+                'consumer' => get_called_class(),
             ],
             $data
         );
@@ -163,8 +152,6 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
 
     /**
      * A helper method to quickly dispatch queue payloads.
-     *
-     * @param AbstractQueuePayload $payload
      */
     public function dispatchQueuePayload(AbstractQueuePayload $payload): void
     {
@@ -212,6 +199,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
         //  Ideally we would email at this point, but there is nothing to email about.
         if (is_null($this->task)) {
             $this->logger->emergency(sprintf('Invalid task "%s" given to "%s"', $this->message->body, $queueName));
+
             //  Instead of using failed we use complete, this prevents the job being re-queued.
             return self::TASK_COMPLETE;
         }
@@ -232,13 +220,13 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
                 $this->task->getQueueName(),
                 $redelivered ? 're-attempting' : 'attempting',
                 $this->task->getId(),
-                json_encode($this->task->getPayload())
+                json_encode($this->task->getPayload()),
             ),
             [
                 'rabbitmq_id' => $id,
                 'rabbitmq_redelivered' => $redelivered,
                 'timestamp' => $this->task->getStartedDate()->getTimestamp(),
-                'attempts' => $this->task->getAttempts()
+                'attempts' => $this->task->getAttempts(),
             ]
         );
 
@@ -279,7 +267,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
                     "%s\n%s\n\n%s",
                     get_class($exception),
                     $exception->getMessage(),
-                    $exception->getTraceAsString()
+                    $exception->getTraceAsString(),
                 )
             );
         }
@@ -328,7 +316,6 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
      * be flushed at this point. In other words, either don't use the entity manager at all, or flush only the entities
      * you really intend to flush via `EntityManager::flush($entityIIntendToFlush);`
      *
-     * @param AbstractQueuePayload $payload
      * @return void
      */
     protected function onTaskCancelled(AbstractQueuePayload $payload)
@@ -340,20 +327,18 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
      *
      * Read about the entity manager's usage caveats in the docblock for ::onTaskCancelled().
      *
-     * @param AbstractQueuePayload $payload
-     * @param Throwable $exception
-     * @param bool $isPermanentFailure
      * @return void
      */
-    protected function onTaskAbortedByException(AbstractQueuePayload $payload, Throwable $exception, bool $isPermanentFailure)
-    {
+    protected function onTaskAbortedByException(
+        AbstractQueuePayload $payload,
+        Throwable $exception,
+        bool $isPermanentFailure,
+    ) {
     }
 
     /**
      * Run this from your consumer to update the task's completion percentage without flushing
      * anything else into database.
-     *
-     * @param int $completionPercentage
      */
     protected function setTaskCompletionPercentage(int $completionPercentage)
     {
@@ -369,7 +354,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
 
         $query->setParameters([
             'completionPercentage' => $completionPercentage,
-            'taskId' => $this->task->getId(),
+            'taskId'               => $this->task->getId(),
         ]);
 
         $query->getResult();
@@ -393,8 +378,6 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
 
     /**
      * Check the task has attempts left, return true to remove the job.
-     *
-     * @return bool
      */
     private function validateTaskAttempts(): bool
     {
@@ -409,7 +392,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
                 'The task "%s" exceeded the max attempt limit ("%s") for the consumer "%s"',
                 $this->task->getId(),
                 $this->getAttemptLimit(),
-                $this->task->getQueueName()
+                $this->task->getQueueName(),
             )
         );
 
@@ -452,7 +435,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
             sprintf(
                 'Consumer "%s" for task "%s" cancelled',
                 $this->task->getQueueName(),
-                $this->task->getId()
+                $this->task->getId(),
             )
         );
 
@@ -471,7 +454,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
             sprintf(
                 'Consumer "%s" for task "%s" completed',
                 $this->task->getQueueName(),
-                $this->task->getId()
+                $this->task->getId(),
             )
         );
 
@@ -486,8 +469,8 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
             sprintf(
                 'Consumer "%s" for task "%s" failed',
                 $this->task->getQueueName(),
-                $this->task->getId()
-            )
+                $this->task->getId(),
+            ),
         );
 
     }

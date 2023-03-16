@@ -9,7 +9,7 @@ use Printed\Bundle\Queue\Service\QueueMaintenance\QueueMaintenanceStrategyInterf
 class QueueMaintenance
 {
     public function __construct(
-        private readonly QueueMaintenanceStrategyInterface $queueMaintenanceStrategy
+        private readonly QueueMaintenanceStrategyInterface $queueMaintenanceStrategy,
     ) {
     }
 
