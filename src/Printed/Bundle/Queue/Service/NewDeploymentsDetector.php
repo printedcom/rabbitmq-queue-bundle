@@ -18,7 +18,7 @@ class NewDeploymentsDetector
         return $this->newDeploymentsDetectorStrategy->getCurrentDeploymentStamp();
     }
 
-    public function setCurrentDeploymentStamp(string $deploymentStamp):  void
+    public function setCurrentDeploymentStamp(string $deploymentStamp): void
     {
         $this->newDeploymentsDetectorStrategy->setCurrentDeploymentStamp($deploymentStamp);
     }
