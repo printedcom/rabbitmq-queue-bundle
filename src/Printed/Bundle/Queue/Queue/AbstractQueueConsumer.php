@@ -71,9 +71,9 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
     /**
      * @param EntityManagerInterface $em This is always the application's entity manager
      * @param ContainerInterface $locator Services requested by ::getSubscribedServices() are available in this container.
-     * @param EntityManagerInterface|null $internalQueueConsumerEntityManager The (potentially dedicated) entity manager to be used by this abstract class only. Part of
-     *  preventing the "closed" application's entity manager from influencing the ability of this abstract class to
-     *  track failed queue tasks correctly.
+     * @param EntityManagerInterface|null $internalQueueConsumerEntityManager The (potentially dedicated) entity manager
+     *  to be used by this abstract class only. Part of preventing the "closed" application's entity manager
+     *  from influencing the ability of this abstract class to track failed queue tasks correctly.
      *
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws \Psr\Container\NotFoundExceptionInterface
