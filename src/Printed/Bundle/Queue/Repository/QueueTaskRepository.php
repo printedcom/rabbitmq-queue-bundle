@@ -221,10 +221,6 @@ class QueueTaskRepository extends EntityRepository
      *
      *   AND tableAlias.payload->>'field1' = 'value'
      *   AND tableAlias.payload->'nested'->'field'->>'field2' = '10'
-     *
-     * @param string $tableAlias
-     * @param array $queueTaskPayloadCriteria
-     * @return string
      */
     private function translateQueueTaskPayloadCriteriaToSql(
         string $tableAlias,
