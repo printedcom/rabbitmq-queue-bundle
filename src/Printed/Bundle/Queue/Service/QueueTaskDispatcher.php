@@ -29,7 +29,7 @@ class QueueTaskDispatcher
     /** @var ScheduledQueueTask[]|array Of structure { [queuePayloadSplObjectHash: string]: ScheduledQueueTask; } */
     protected array $payloadsDelayedUntilNextDoctrineFlush = [];
 
-    /** @var bool Used to prevent dispatching the on-doctrine-flush payloads recursively */
+    /** Used to prevent dispatching the on-doctrine-flush payloads recursively */
     private bool $dispatchingOnDoctrineFlushPayloads = false;
 
     /**
