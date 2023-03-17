@@ -354,7 +354,7 @@ abstract class AbstractQueueConsumer implements ConsumerInterface, ServiceSubscr
 
         $query->setParameters([
             'completionPercentage' => $completionPercentage,
-            'taskId'               => $this->task->getId(),
+            'taskId' => $this->task->getId(),
         ]);
 
         $query->getResult();
