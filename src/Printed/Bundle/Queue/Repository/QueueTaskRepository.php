@@ -1,14 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Printed\Bundle\Queue\Repository;
 
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
 
 use Doctrine\ORM\EntityRepository;
 use Printed\Bundle\Queue\Enum\QueueTaskStatus;
 use Printed\Bundle\Queue\Exception\CouldNotFindAllRequestedQueueTasksException;
 use Printed\Bundle\Queue\Queue\AbstractQueuePayload;
+use RuntimeException;
 
 /**
  * @method QueueTaskInterface find($id, $lockMode = null, $lockVersion = null)
@@ -33,13 +38,11 @@ class QueueTaskRepository extends EntityRepository
      * the expected keys. If the keys are missing, then the queue task will gracefully not be
      * considered as matching.
      *
-     * @param string|null $queueName
-     * @param array $queueTaskPayloadCriteria
      * @return QueueTaskInterface[]
      */
     public function findUnsettled(
-        string $queueName = null,
-        array $queueTaskPayloadCriteria = []
+        ?string $queueName = null,
+        array $queueTaskPayloadCriteria = [],
     ): array {
         return $this->findByQueueNameAndStatuses(
             $queueName,
@@ -51,15 +54,13 @@ class QueueTaskRepository extends EntityRepository
     /**
      * Learn more about the payload criteria by reading the ::findUnsettled() docblock.
      *
-     * @param string|null $queueName
      * @param int[] $queueTaskStatuses Collection of QueueTaskStatus::*
-     * @param array $queueTaskPayloadCriteria
-     * @return array
+     * @return QueueTaskInterface[]
      */
     public function findByQueueNameAndStatuses(
-        string $queueName = null,
+        ?string $queueName = null,
         array $queueTaskStatuses = [],
-        array $queueTaskPayloadCriteria = []
+        array $queueTaskPayloadCriteria = [],
     ): array {
         $dbalConnection = $this->getEntityManager()->getConnection();
         $tableAlias = 'qt';
@@ -97,7 +98,7 @@ class QueueTaskRepository extends EntityRepository
         ", $resultSetMappingBuilder);
 
         if ($queueTaskStatuses) {
-            $nativeQuery->setParameter(1, $queueTaskStatuses, Connection::PARAM_INT_ARRAY);
+            $nativeQuery->setParameter(1, $queueTaskStatuses, ArrayParameterType::INTEGER);
         }
 
         $result = $nativeQuery->getResult();
@@ -117,14 +118,12 @@ class QueueTaskRepository extends EntityRepository
      * Learn more about the payload criteria by reading the ::findUnsettled() docblock.
      *
      * @param string[] $taskPublicIds
-     * @param string|null $queueName
-     * @param array $queueTaskPayloadCriteria
      * @return QueueTaskInterface[]
      */
     public function findByPublicIdsAndQueueNameOrThrow(
         array $taskPublicIds,
-        string $queueName = null,
-        array $queueTaskPayloadCriteria = []
+        ?string $queueName = null,
+        array $queueTaskPayloadCriteria = [],
     ): array {
         $dbalConnection = $this->getEntityManager()->getConnection();
         $tableAlias = 'qt';
@@ -171,7 +170,7 @@ class QueueTaskRepository extends EntityRepository
                     'Could not find all requested queue tasks. Missing tasks: `"%s"`',
                     join('", "', $missingTaskIds)
                 ),
-                $missingTaskIds
+                $missingTaskIds,
             );
         }
 
@@ -182,11 +181,9 @@ class QueueTaskRepository extends EntityRepository
      * Best effort way to find out, whether there are a queue tasks, created by a given payload, that
      * are already in the database (i.e. that are already dispatched).
      *
-     * @param AbstractQueuePayload $payload
-     * @param string|null $queueTaskStatus
      * @return QueueTaskInterface[]
      */
-    public function findByQueuePayload(AbstractQueuePayload $payload, string $queueTaskStatus = null)
+    public function findByQueuePayload(AbstractQueuePayload $payload, ?string $queueTaskStatus = null)
     {
         $searchCriteria = [
             'queueName' => $payload->getQueueName(),
@@ -206,13 +203,11 @@ class QueueTaskRepository extends EntityRepository
         return $results;
     }
 
-    private function assertDatabaseIsPostgres()
+    private function assertDatabaseIsPostgres(): void
     {
-        if ('postgresql' === $this->getEntityManager()->getConnection()->getDatabasePlatform()->getName()) {
-            return;
+        if (!$this->getEntityManager()->getConnection()->getDatabasePlatform() instanceof PostgreSQLPlatform) {
+            throw new RuntimeException('Failed to assert, that database is PostgreSQL.');
         }
-
-        throw new \RuntimeException('Failed to assert, that database is PostgreSQL.');
     }
 
     /**
@@ -226,14 +221,10 @@ class QueueTaskRepository extends EntityRepository
      *
      *   AND tableAlias.payload->>'field1' = 'value'
      *   AND tableAlias.payload->'nested'->'field'->>'field2' = '10'
-     *
-     * @param string $tableAlias
-     * @param array $queueTaskPayloadCriteria
-     * @return string
      */
     private function translateQueueTaskPayloadCriteriaToSql(
         string $tableAlias,
-        array $queueTaskPayloadCriteria
+        array $queueTaskPayloadCriteria,
     ): string {
         /** @var string[] $sqlLines */
         $sqlLines = [];
@@ -256,7 +247,7 @@ class QueueTaskRepository extends EntityRepository
                 "AND %s.payload%s = '%s'",
                 $tableAlias,
                 join('', $jsonLevels),
-                $criterionValue
+                $criterionValue,
             );
         }
 

@@ -13,12 +13,8 @@ use Printed\Bundle\Queue\Service\QueueTaskDispatcher;
  */
 class DispatchDelayedQueueTasksEventListener implements EventSubscriber
 {
-    /** @var QueueTaskDispatcher */
-    private $queueTaskDispatcher;
-
-    public function __construct(QueueTaskDispatcher $queueTaskDispatcher)
+    public function __construct(private readonly QueueTaskDispatcher $queueTaskDispatcher)
     {
-        $this->queueTaskDispatcher = $queueTaskDispatcher;
     }
 
     public function getSubscribedEvents(): array
@@ -34,7 +30,7 @@ class DispatchDelayedQueueTasksEventListener implements EventSubscriber
          * Make sure the flush doesn't happen in a db transaction, because this wouldn't actually
          * make the queue tasks available in the database at this point.
          */
-        if ($event->getEntityManager()->getConnection()->isTransactionActive()) {
+        if ($event->getObjectManager()->getConnection()->isTransactionActive()) {
             return;
         }
 

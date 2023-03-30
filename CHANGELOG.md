@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Update dependencies and code to work with Symfony ^6.0 and PHP ^8.1.
+
+### Breaking changes
+- PHP >= 8.1
+- Symfony ^6.0
 
 ## [5.1.0] - 2023-03-14
 ### Fixed

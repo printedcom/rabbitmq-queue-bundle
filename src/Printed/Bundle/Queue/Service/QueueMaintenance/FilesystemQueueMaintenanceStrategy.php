@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Printed\Bundle\Queue\Service\QueueMaintenance;
 
 use Symfony\Component\Filesystem\Filesystem;
@@ -19,11 +21,9 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 class FilesystemQueueMaintenanceStrategy implements QueueMaintenanceStrategyInterface
 {
-    /** @var Filesystem */
-    private $fileSystem;
+    private Filesystem $fileSystem;
 
-    /** @var string */
-    private $lockFileFullPath;
+    private string $lockFileFullPath;
 
     /**
      * @param string $cacheDirectory
@@ -45,7 +45,7 @@ class FilesystemQueueMaintenanceStrategy implements QueueMaintenanceStrategyInte
     /**
      * @inheritdoc
      */
-    public function enable()
+    public function enable(): void
     {
         $this->fileSystem->dumpFile($this->lockFileFullPath, time());
     }
@@ -53,7 +53,7 @@ class FilesystemQueueMaintenanceStrategy implements QueueMaintenanceStrategyInte
     /**
      * @inheritdoc
      */
-    public function disable()
+    public function disable(): void
     {
         $this->fileSystem->remove($this->lockFileFullPath);
     }

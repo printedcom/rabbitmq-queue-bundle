@@ -12,12 +12,16 @@ services:
       - # (argument populated dynamically in QueueExtension.php)
     public: false
 
+  Printed\Bundle\Queue\ValueObject\QueueBundleOptions: '@printed.bundle.queue.service.queue_bundle_options'
+
   # Service Container Parameters.
   printed.bundle.queue.service.service_container_parameters:
     class: 'Printed\Bundle\Queue\Service\ServiceContainerParameters'
     arguments:
       - '@service_container'
     public: false
+
+  Printed\Bundle\Queue\Service\ServiceContainerParameters: '@printed.bundle.queue.service.service_container_parameters'
 
   # Queue Task Dispatcher.
   printed.bundle.queue.service.queue_task_dispatcher:
@@ -30,6 +34,8 @@ services:
       - '@printed.bundle.queue.service.uuid'
     public: false
 
+  Printed\Bundle\Queue\Service\QueueTaskDispatcher: '@printed.bundle.queue.service.queue_task_dispatcher'
+
   # Queue Maintenance Manager.
   printed.bundle.queue.service.queue_maintenance:
     class: 'Printed\Bundle\Queue\Service\QueueMaintenance'
@@ -37,11 +43,15 @@ services:
       - # (argument populated dynamically in QueueExtension.php)
     public: false
 
+  Printed\Bundle\Queue\Service\QueueMaintenance: '@printed.bundle.queue.service.queue_maintenance'
+
   printed.bundle.queue.service.queue_maintenance.filesystem_queue_maintenance_strategy:
     class: 'Printed\Bundle\Queue\Service\QueueMaintenance\FilesystemQueueMaintenanceStrategy'
     arguments:
       - '%kernel.cache_dir%'
     public: false
+
+  Printed\Bundle\Queue\Service\QueueMaintenance\FilesystemQueueMaintenanceStrategy: '@printed.bundle.queue.service.queue_maintenance.filesystem_queue_maintenance_strategy'
 
   printed.bundle.queue.service.queue_maintenance.cache_queue_maintenance_strategy:
     class: 'Printed\Bundle\Queue\Service\QueueMaintenance\CacheQueueMaintenanceStrategy'
@@ -50,6 +60,8 @@ services:
       - "@logger"
     public: false
 
+  Printed\Bundle\Queue\Service\QueueMaintenance\CacheQueueMaintenanceStrategy: '@printed.bundle.queue.service.queue_maintenance.cache_queue_maintenance_strategy'
+
   # New deployments detector.
   printed.bundle.queue.service.new_deployments_detector:
     class: 'Printed\Bundle\Queue\Service\NewDeploymentsDetector'
@@ -57,9 +69,13 @@ services:
       - # (argument populated dynamically in QueueExtension.php)
     public: false
 
+  Printed\Bundle\Queue\Service\NewDeploymentsDetector: '@printed.bundle.queue.service.new_deployments_detector'
+
   printed.bundle.queue.service.new_deployments_detector.noop_strategy:
     class: 'Printed\Bundle\Queue\Service\NewDeploymentsDetector\NoopNewDeploymentsDetectorStrategy'
     public: false
+
+  Printed\Bundle\Queue\Service\NewDeploymentsDetector\NoopNewDeploymentsDetectorStrategy: '@printed.bundle.queue.service.new_deployments_detector.noop_strategy'
 
   printed.bundle.queue.service.new_deployments_detector.cache_strategy:
     class: 'Printed\Bundle\Queue\Service\NewDeploymentsDetector\CacheNewDeploymentsDetectorStrategy'
@@ -68,6 +84,8 @@ services:
       - "@logger"
     public: false
 
+  Printed\Bundle\Queue\Service\NewDeploymentsDetector\CacheNewDeploymentsDetectorStrategy: '@printed.bundle.queue.service.new_deployments_detector.cache_strategy'
+
   # Vhost existence ensurer.
   printed.bundle.queue.service.rabbit_mq_vhost_existence_ensurer:
     class: 'Printed\Bundle\Queue\Service\RabbitMqVhostExistenceEnsurer'
@@ -75,6 +93,8 @@ services:
       - '@logger'
       - '@printed.bundle.queue.service.queue_bundle_options'
     public: false
+
+  Printed\Bundle\Queue\Service\RabbitMqVhostExistenceEnsurer: '@printed.bundle.queue.service.rabbit_mq_vhost_existence_ensurer'
 
   # UUID service.
   printed.bundle.queue.service.uuid:

@@ -1,7 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Printed\Bundle\Queue\Service;
 
+use Closure;
+use DateTime;
+use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 use Printed\Bundle\Queue\Entity\QueueTask;
 use Printed\Bundle\Queue\EntityInterface\QueueTaskInterface;
 use Printed\Bundle\Queue\Enum\QueueTaskStatus;
@@ -12,8 +18,6 @@ use Printed\Bundle\Queue\ValueObject\ScheduledQueueTask;
 use Ramsey\Uuid\UuidFactory;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-use Doctrine\ORM\EntityManager;
-
 use OldSound\RabbitMqBundle\RabbitMq\ProducerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -22,45 +26,22 @@ use Psr\Log\LoggerInterface;
  */
 class QueueTaskDispatcher
 {
-    /** @var EntityManager */
-    protected $em;
+    /** @var ScheduledQueueTask[]|array Of structure { [queuePayloadSplObjectHash: string]: ScheduledQueueTask; } */
+    protected array $payloadsDelayedUntilNextDoctrineFlush = [];
 
-    /** @var LoggerInterface */
-    protected $logger;
-
-    /** @var ValidatorInterface */
-    protected $validator;
-
-    /** @var UuidFactory */
-    protected $uuidGenerator;
-
-    /** @var ProducerInterface This must be a producer that uses the default RabbitMQ's "(AMQP default)" exchange. */
-    protected $defaultRabbitMqProducer;
-
-    /** @var array Of structure { [queuePayloadSplObjectHash: string]: ScheduledQueueTask; } */
-    protected $payloadsDelayedUntilNextDoctrineFlush;
-
-    /** @var bool Used to prevent dispatching the on-doctrine-flush payloads recursively */
-    private $dispatchingOnDoctrineFlushPayloads;
+    /** Used to prevent dispatching the on-doctrine-flush payloads recursively */
+    private bool $dispatchingOnDoctrineFlushPayloads = false;
 
     /**
-     * {@inheritdoc}
+     * @param ProducerInterface $defaultRabbitMqProducer This must be a producer that uses the default RabbitMQ's "(AMQP default)" exchange.
      */
     public function __construct(
-        EntityManager $em,
-        LoggerInterface $logger,
-        ValidatorInterface $validator,
-        ProducerInterface $defaultRabbitMqProducer,
-        UuidFactory $uuidGenerator
+        protected EntityManagerInterface $em,
+        protected LoggerInterface $logger,
+        protected ValidatorInterface $validator,
+        protected ProducerInterface $defaultRabbitMqProducer,
+        protected UuidFactory $uuidGenerator,
     ) {
-        $this->em = $em;
-        $this->logger = $logger;
-        $this->validator = $validator;
-        $this->payloadsDelayedUntilNextDoctrineFlush = [];
-        $this->dispatchingOnDoctrineFlushPayloads = false;
-
-        $this->defaultRabbitMqProducer = $defaultRabbitMqProducer;
-        $this->uuidGenerator = $uuidGenerator;
     }
 
     /**
@@ -95,11 +76,11 @@ class QueueTaskDispatcher
             $options['preQueueTaskDispatchFn']
             && !is_callable($options['preQueueTaskDispatchFn'])
         ) {
-            throw new \InvalidArgumentException("`preQueueTaskDispatchFn` must either be a callable or a null");
+            throw new InvalidArgumentException("`preQueueTaskDispatchFn` must either be a callable or a null");
         }
 
         $task = new QueueTask;
-        $task->setPublicId($this->uuidGenerator->uuid4());
+        $task->setPublicId($this->uuidGenerator->uuid4()->toString());
 
         $task->setStatus(QueueTaskStatus::PENDING);
         $task->setQueueName($payload::getQueueName());
@@ -108,7 +89,7 @@ class QueueTaskDispatcher
         $task->setPayloadClass(get_class($payload));
         $task->setPayload($payload->getProperties());
 
-        $task->setCreatedDate(new \DateTime);
+        $task->setCreatedDate(new DateTime);
 
         $this->em->persist($task);
         $this->em->flush($task);
@@ -148,33 +129,13 @@ class QueueTaskDispatcher
      * in the payload), then pass a "payload creator function", which is invoked after final Doctrine flush but before
      * the queue task dispatch.
      *
-     * @param AbstractQueuePayload|callable $payloadOrPayloadCreatorFn This must not be a callable in the array form.
+     * @param Closure|AbstractQueuePayload $payloadOrPayloadCreatorFn This must not be a callable in the array form.
      *      The callable must return an instance of AbstractQueuePayload and require no arguments
+     *
      * @return ScheduledQueueTask
      */
-    public function dispatchAfterNextEntityManagerFlush($payloadOrPayloadCreatorFn): ScheduledQueueTask
+    public function dispatchAfterNextEntityManagerFlush(Closure|AbstractQueuePayload $payloadOrPayloadCreatorFn): ScheduledQueueTask
     {
-        if (
-            !$payloadOrPayloadCreatorFn instanceof AbstractQueuePayload
-            && !is_callable($payloadOrPayloadCreatorFn)
-        ) {
-            throw new \InvalidArgumentException(sprintf(
-                'Argument to `%s` function must either be an instance of `%s` or a callable',
-                __METHOD__,
-                AbstractQueuePayload::class
-            ));
-        }
-
-        /*
-         * Disallow "array" callables because I can't get object hashes of arrays.
-         */
-        if (is_array($payloadOrPayloadCreatorFn)) {
-            throw new \InvalidArgumentException(sprintf(
-                'Callables in the array form are not supported in `%s`.',
-                __METHOD__
-            ));
-        }
-
         $existingScheduledQueueTask = $this->payloadsDelayedUntilNextDoctrineFlush[spl_object_hash($payloadOrPayloadCreatorFn)]
             ?? null;
 
@@ -205,7 +166,7 @@ class QueueTaskDispatcher
     /**
      * @internal Don't use this method.
      */
-    public function dispatchOnDoctrineFlushPayloads()
+    public function dispatchOnDoctrineFlushPayloads(): void
     {
         if (
             !$this->payloadsDelayedUntilNextDoctrineFlush
@@ -217,8 +178,6 @@ class QueueTaskDispatcher
         $this->dispatchingOnDoctrineFlushPayloads = true;
 
         foreach ($this->payloadsDelayedUntilNextDoctrineFlush as $scheduledQueueTask) {
-            /** @var ScheduledQueueTask $scheduledQueueTask */
-
             $payload = $scheduledQueueTask->getPayload();
             $isPayloadConstructedLate = false;
 
@@ -247,7 +206,7 @@ class QueueTaskDispatcher
         $this->dispatchingOnDoctrineFlushPayloads = false;
     }
 
-    private function throwIfPayloadInvalid(AbstractQueuePayload $payload)
+    private function throwIfPayloadInvalid(AbstractQueuePayload $payload): void
     {
         $errors = $this->validator->validate($payload);
 
