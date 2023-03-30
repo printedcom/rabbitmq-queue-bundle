@@ -58,23 +58,23 @@ class MaintenanceWaitForRunningCommand extends Command
         $dbal = $this->dbalConnection;
 
         if (!$this->doesDatabaseExist($dbal)) {
-            $output->writeln("<error>The database doesn't exist. This is expected, if the bundle is used for the first time. Otherwise it's a critical error you should investigate.</error>");
+            $output->writeln("<comment>The database doesn't exist. This is expected, if the bundle is used for the first time. Otherwise, it's a critical error you should investigate.</comment>");
 
-            return static::FAILURE;
+            return static::SUCCESS;
         }
 
         /*
          * Exit immediately if the queue tasks db table is not in the database. Assume no workers
          * are running.
          */
-        if (!in_array('queue_task', $dbal->getSchemaManager()->listTableNames())) {
-            $output->writeln("<error>Couldn't find the queue tasks table in the database. This is expected, if the bundle is used for the first time. Otherwise it's a critical error you should investigate.</error>");
+        if (!in_array('queue_task', $dbal->createSchemaManager()->listTableNames())) {
+            $output->writeln("<comment>Couldn't find the queue tasks table in the database. This is expected, if the bundle is used for the first time. Otherwise, it's a critical error you should investigate.</comment>");
 
-            return static::FAILURE;
+            return static::SUCCESS;
         }
 
         //  Get the refresh time, this is 3 by default.
-        $refresh = (integer) $input->getOption('refresh');
+        $refresh = (int) $input->getOption('refresh');
 
         $table = new Table($output);
         $table->setHeaders(['Queue', 'Tasks']);
