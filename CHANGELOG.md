@@ -186,7 +186,7 @@ exceptions.
 - [Breaking change] Use exchange-less way of using producers and consumers
 
 [Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.2.0...HEAD
-[5.1.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.1.0...5.2.0
+[5.2.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.1.0...5.2.0
 [5.1.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.0.1...5.1.0
 [5.0.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.0.0...5.0.1
 [5.0.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/4.5.3...5.0.0
