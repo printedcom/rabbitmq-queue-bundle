@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Breaking changes
+- QueueTaskRepository.php::findByQueuePayload() now has a correct typehint on the "$queueTaskStatus" argument. This
+  may break the usages only if the call-sites uses php strict types and they were casting this argument to "(string)".
+  The explicit cast should be removed to resolve this breaking change.
 
 ## [5.1.0] - 2023-03-14
 ### Fixed
