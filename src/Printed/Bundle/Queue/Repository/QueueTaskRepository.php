@@ -183,10 +183,10 @@ class QueueTaskRepository extends EntityRepository
      * are already in the database (i.e. that are already dispatched).
      *
      * @param AbstractQueuePayload $payload
-     * @param string|null $queueTaskStatus
+     * @param int|null $queueTaskStatus
      * @return QueueTaskInterface[]
      */
-    public function findByQueuePayload(AbstractQueuePayload $payload, string $queueTaskStatus = null)
+    public function findByQueuePayload(AbstractQueuePayload $payload, int $queueTaskStatus = null)
     {
         $searchCriteria = [
             'queueName' => $payload->getQueueName(),
