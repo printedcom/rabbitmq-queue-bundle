@@ -6,7 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-### [5.3.0] - 2025-01-27
+## [5.3.1] - 2025-01-27
+### Fixed
+- Fixed typo where `QueueTask` created column is actually named `created_date`.
+
+## [5.3.0] - 2025-01-27
 ### Added
 - Index on `created` column.
 
@@ -191,7 +195,8 @@ exceptions.
 ### Changed
 - [Breaking change] Use exchange-less way of using producers and consumers
 
-[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.3.0...HEAD
+[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.3.1...HEAD
+[5.3.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.3.0...5.3.1
 [5.3.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.2.0...5.3.0
 [5.2.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.1.0...5.2.0
 [5.1.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.0.1...5.1.0
