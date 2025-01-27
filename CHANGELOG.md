@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### [5.3.0] - 2025-01-27
+### Added
+- Index on `created` column.
+
+Please take care when updating to this version as the index could take a while to run on production databases, and can lock the table whilst running.
+
 ## [5.2.0] - 2023-08-09
 ### Breaking changes
 - QueueTaskRepository.php::findByQueuePayload() now has a correct typehint on the "$queueTaskStatus" argument. This
@@ -185,7 +191,8 @@ exceptions.
 ### Changed
 - [Breaking change] Use exchange-less way of using producers and consumers
 
-[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.2.0...HEAD
+[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.3.0...HEAD
+[5.3.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.2.0...5.3.0
 [5.2.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.1.0...5.2.0
 [5.1.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.0.1...5.1.0
 [5.0.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.0.0...5.0.1
