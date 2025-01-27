@@ -15,7 +15,7 @@ use Printed\Bundle\Queue\Enum\QueueTaskStatus;
  *     indexes={
  *          @ORM\Index(columns={"status"}),
  *          @ORM\Index(columns={"queue_name"}),
- *          @ORM\Index(columns={"created"})
+ *          @ORM\Index(columns={"created_date"})
  *     },
  * )
  */
