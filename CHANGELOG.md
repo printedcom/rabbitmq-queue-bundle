@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [5.3.2] - 2025-04-02
+### Fixed
+- Force uuid generation as string when dispatching a QueueTask.
+
 ## [5.3.1] - 2025-01-27
 ### Fixed
 - Fixed typo where `QueueTask` created column is actually named `created_date`.
