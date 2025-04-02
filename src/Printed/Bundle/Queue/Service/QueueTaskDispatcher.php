@@ -99,7 +99,7 @@ class QueueTaskDispatcher
         }
 
         $task = new QueueTask;
-        $task->setPublicId($this->uuidGenerator->uuid4());
+        $task->setPublicId($this->uuidGenerator->uuid4()->toString());
 
         $task->setStatus(QueueTaskStatus::PENDING);
         $task->setQueueName($payload::getQueueName());
