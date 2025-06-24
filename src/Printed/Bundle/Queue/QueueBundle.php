@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Printed\Bundle\Queue;
 
 use Printed\Bundle\Queue\DependencyInjection\QueueExtension;
@@ -11,13 +13,11 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
  */
 class QueueBundle extends Bundle
 {
-
     /**
      * {@inheritdoc}
      */
-    public function getContainerExtension()
+    public function getContainerExtension(): QueueExtension
     {
         return new QueueExtension;
     }
-
 }

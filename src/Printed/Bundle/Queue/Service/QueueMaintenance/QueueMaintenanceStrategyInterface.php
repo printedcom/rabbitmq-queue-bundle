@@ -17,10 +17,10 @@ interface QueueMaintenanceStrategyInterface
     /**
      * @return void
      */
-    public function enable();
+    public function enable(): void;
 
     /**
      * @return void
      */
-    public function disable();
+    public function disable(): void;
 }

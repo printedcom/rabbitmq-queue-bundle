@@ -24,5 +24,5 @@ interface NewDeploymentsDetectorStrategyInterface
      * @param string $deploymentStamp
      * @return void
      */
-    public function setCurrentDeploymentStamp(string $deploymentStamp);
+    public function setCurrentDeploymentStamp(string $deploymentStamp): void;
 }

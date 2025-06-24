@@ -5,3 +5,5 @@ services:
     arguments:
       - '@printed.bundle.queue.repository.queue_task'
     public: false
+
+  Printed\Bundle\Queue\Helper\QueueTaskHelper: '@printed.bundle.queue.helper.queue_task_helper'

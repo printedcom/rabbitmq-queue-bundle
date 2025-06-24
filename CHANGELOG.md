@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [6.1.0] - 2025-06-24
+### Changed
+- Replaced entity doctrine annotations with php attributes
+
+### Breaking change
+- Sync with https://github.com/printedcom/rabbitmq-queue-bundle.git.
+
 ## [5.3.2] - 2025-04-02
 ### Fixed
 - Force uuid generation as string when dispatching a QueueTask.
@@ -25,6 +32,14 @@ Please take care when updating to this version as the index could take a while t
 - QueueTaskRepository.php::findByQueuePayload() now has a correct typehint on the "$queueTaskStatus" argument. This
   may break the usages only if the call-sites uses php strict types and they were casting this argument to "(string)".
   The explicit cast should be removed to resolve this breaking change.
+
+## [6.0.0] - 2023-03-15
+### Changed
+- Updated dependencies and update code to work with Symfony ^6.0 and PHP ^8.1.
+
+### Breaking changes
+- PHP >= 8.1
+- Symfony ^6.0
 
 ## [5.1.0] - 2023-03-14
 ### Fixed
@@ -200,6 +215,8 @@ exceptions.
 - [Breaking change] Use exchange-less way of using producers and consumers
 
 [Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.3.1...HEAD
+[6.1.0]: https://github.com/MasterRO94/printed-rabbitmq-queue-bundle/compare/6.0.0...6.1.0
+[6.0.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.1.0...MasterRO94:printed-rabbitmq-queue-bundle:6.0.0
 [5.3.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.3.0...5.3.1
 [5.3.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.2.0...5.3.0
 [5.2.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.1.0...5.2.0

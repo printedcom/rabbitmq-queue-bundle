@@ -8,21 +8,14 @@ use Printed\Bundle\Queue\Repository\QueueTaskRepository;
 
 class QueueTaskHelper
 {
-    /** @var QueueTaskRepository */
-    private $queueTaskRepository;
-
-    public function __construct(QueueTaskRepository $queueTaskRepository)
+    public function __construct(private readonly QueueTaskRepository $queueTaskRepository)
     {
-        $this->queueTaskRepository = $queueTaskRepository;
     }
 
-    /**
-     * @param QueueTaskInterface $task
-     * @return AbstractQueuePayload
-     */
     public function getPayload(QueueTaskInterface $task): AbstractQueuePayload
     {
         $class = $task->getPayloadClass();
+
         return new $class($task->getPayload());
     }
 
@@ -32,18 +25,16 @@ class QueueTaskHelper
      * Learn about $queueTaskPayloadCriteria in QueueTaskRepository.
      *
      * @param string[] $taskPublicIds
-     * @param string|null $queueName
-     * @param array $queueTaskPayloadCriteria
      */
     public function requestTasksCancellationOrThrow(
         array $taskPublicIds,
-        string $queueName = null,
-        array $queueTaskPayloadCriteria = []
-    ) {
+        ?string $queueName = null,
+        array $queueTaskPayloadCriteria = [],
+    ): void {
         $tasks = $this->queueTaskRepository->findByPublicIdsAndQueueNameOrThrow(
             $taskPublicIds,
             $queueName,
-            $queueTaskPayloadCriteria
+            $queueTaskPayloadCriteria,
         );
 
         foreach ($tasks as $task) {

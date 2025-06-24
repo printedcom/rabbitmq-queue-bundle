@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Printed\Bundle\Queue\Command;
 
 use Printed\Bundle\Queue\Service\QueueMaintenance;
@@ -12,20 +14,15 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class MaintenanceDownCommand extends Command
 {
-    /** @var QueueMaintenance */
-    private $queueMaintenance;
-
-    public function __construct(QueueMaintenance $queueMaintenance)
+    public function __construct(private readonly QueueMaintenance $queueMaintenance)
     {
         parent::__construct();
-
-        $this->queueMaintenance = $queueMaintenance;
     }
-    
+
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('queue:maintenance:down');
         $this->setDescription('Disable the maintenance mode for the queue');
@@ -35,10 +32,12 @@ class MaintenanceDownCommand extends Command
     /**
      * {@inheritdoc}
      */
-    public function execute(InputInterface $input, OutputInterface $output)
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('<info>Disabling maintenance mode</info>');
 
         $this->queueMaintenance->disable();
+
+        return static::SUCCESS;
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Printed\Bundle\Queue\Service\NewDeploymentsDetector;
 
 /**
@@ -14,7 +16,7 @@ class NoopNewDeploymentsDetectorStrategy implements NewDeploymentsDetectorStrate
         return 'noop';
     }
 
-    public function setCurrentDeploymentStamp(string $deploymentStamp)
+    public function setCurrentDeploymentStamp(string $deploymentStamp): void
     {
     }
 }
