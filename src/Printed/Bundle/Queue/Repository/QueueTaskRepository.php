@@ -183,7 +183,7 @@ class QueueTaskRepository extends EntityRepository
      *
      * @return QueueTaskInterface[]
      */
-    public function findByQueuePayload(AbstractQueuePayload $payload, ?string $queueTaskStatus = null)
+    public function findByQueuePayload(AbstractQueuePayload $payload, ?int $queueTaskStatus = null)
     {
         $searchCriteria = [
             'queueName' => $payload->getQueueName(),
