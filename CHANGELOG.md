@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [6.2.0] - 2025-06-24
+### Changed
+- Replaced entity doctrine annotations with php attributes
+
 ## [6.1.0] - 2025-06-24
 ### Breaking change
 - Sync with https://github.com/printedcom/rabbitmq-queue-bundle.git.
@@ -212,6 +216,9 @@ exceptions.
 - [Breaking change] Use exchange-less way of using producers and consumers
 
 [Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.3.1...HEAD
+[6.2.0]: https://github.com/MasterRO94/printed-rabbitmq-queue-bundle/compare/6.1.0...6.2.0
+[6.1.0]: https://github.com/MasterRO94/printed-rabbitmq-queue-bundle/compare/6.0.0...6.1.0
+[6.0.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.1.0...MasterRO94:printed-rabbitmq-queue-bundle:6.0.0
 [5.3.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.3.0...5.3.1
 [5.3.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.2.0...5.3.0
 [5.2.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.1.0...5.2.0
