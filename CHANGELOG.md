@@ -6,12 +6,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-## [6.1.0] - 2025-06-24
+## [6.1.1] - 2026-10-23
 ### Changed
-- Replaced entity doctrine annotations with php attributes
+- Updated dependencies and updated code to work with Symfony ^6.0 and PHP ^8.1.
+- Replaced entity doctrine annotations with php attributes.
 
-### Breaking change
-- Sync with https://github.com/printedcom/rabbitmq-queue-bundle.git.
+### Fixed
+- Fix incorrect QueueTask entity `ORM\Index` php attributes.
+  - WARNING: this potentially will create new db indexes on the `queue_task` table. It might take a while to create them if that table has a lot of records.
+- In `QueueTaskRepository::findByQueueNameAndStatuses()`, fix `$queueNameWhereSql` being used instead of `$queueTaskStatusesWhereSql`
+
+### Breaking changes
+- Merge a foreign fork (thank you!) with the following changes:
+  - PHP >= 8.1
+  - Symfony ^6.0
+- When upgrading from a foreign tag 6.0.x to 6.1.x, please note the breaking change in tag 5.2.0 below.
 
 ## [5.3.2] - 2025-04-02
 ### Fixed
@@ -32,14 +41,6 @@ Please take care when updating to this version as the index could take a while t
 - QueueTaskRepository.php::findByQueuePayload() now has a correct typehint on the "$queueTaskStatus" argument. This
   may break the usages only if the call-sites uses php strict types and they were casting this argument to "(string)".
   The explicit cast should be removed to resolve this breaking change.
-
-## [6.0.0] - 2023-03-15
-### Changed
-- Updated dependencies and update code to work with Symfony ^6.0 and PHP ^8.1.
-
-### Breaking changes
-- PHP >= 8.1
-- Symfony ^6.0
 
 ## [5.1.0] - 2023-03-14
 ### Fixed
@@ -214,10 +215,10 @@ exceptions.
 ### Changed
 - [Breaking change] Use exchange-less way of using producers and consumers
 
-[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.3.1...HEAD
-[6.1.0]: https://github.com/MasterRO94/printed-rabbitmq-queue-bundle/compare/6.0.0...6.1.0
-[6.0.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.1.0...MasterRO94:printed-rabbitmq-queue-bundle:6.0.0
-[5.3.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.3.0...5.3.1
+[Unreleased]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/6.1.1...HEAD
+[6.1.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.3.2...6.1.1
+[5.3.2]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.3.1...5.3.2
+[5.3.1]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.3.0...5.3.1
 [5.3.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.2.0...5.3.0
 [5.2.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.1.0...5.2.0
 [5.1.0]: https://github.com/printedcom/rabbitmq-queue-bundle/compare/5.0.1...5.1.0
