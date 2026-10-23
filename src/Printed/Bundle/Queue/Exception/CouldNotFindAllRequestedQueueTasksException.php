@@ -1,21 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Printed\Bundle\Queue\Exception;
+
+use RuntimeException;
 
 /**
  * Thrown, when queue task repository couldn't find all requested tasks in
  * the database.
  */
-class CouldNotFindAllRequestedQueueTasksException extends \RuntimeException
+class CouldNotFindAllRequestedQueueTasksException extends RuntimeException
 {
-    /** @var string[] */
-    private $missingTaskIds;
-
-    public function __construct(string $message, array $missingTaskIds)
+    /**
+     * @param string[] $missingTaskIds
+     */
+    public function __construct(string $message, private readonly array $missingTaskIds)
     {
         parent::__construct($message);
-
-        $this->missingTaskIds = $missingTaskIds;
     }
 
     /**

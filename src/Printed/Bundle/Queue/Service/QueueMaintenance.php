@@ -1,18 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Printed\Bundle\Queue\Service;
 
 use Printed\Bundle\Queue\Service\QueueMaintenance\QueueMaintenanceStrategyInterface;
 
 class QueueMaintenance
 {
-    /** @var QueueMaintenanceStrategyInterface */
-    private $queueMaintenanceStrategy;
-
     public function __construct(
-        QueueMaintenanceStrategyInterface $queueMaintenanceStrategy
+        private readonly QueueMaintenanceStrategyInterface $queueMaintenanceStrategy,
     ) {
-        $this->queueMaintenanceStrategy = $queueMaintenanceStrategy;
     }
 
     public function isEnabled(): bool
@@ -20,12 +18,12 @@ class QueueMaintenance
         return $this->queueMaintenanceStrategy->isEnabled();
     }
 
-    public function enable()
+    public function enable(): void
     {
         $this->queueMaintenanceStrategy->enable();
     }
 
-    public function disable()
+    public function disable(): void
     {
         $this->queueMaintenanceStrategy->disable();
     }
