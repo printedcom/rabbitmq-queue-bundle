@@ -72,7 +72,7 @@ class QueueTaskRepository extends EntityRepository
 
         $queueTaskStatusesWhereSql = '';
         if ($queueTaskStatuses) {
-            $queueNameWhereSql = "AND {$tableAlias}.status IN (?)";
+            $queueTaskStatusesWhereSql = "AND {$tableAlias}.status IN (?)";
         }
 
         $queueTaskPayloadWhereSql = '';
