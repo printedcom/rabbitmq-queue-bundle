@@ -7,3 +7,5 @@ services:
     factory: ["@doctrine.orm.entity_manager", getRepository]
     arguments:
       - 'Printed\Bundle\Queue\Entity\QueueTask'
+
+  Printed\Bundle\Queue\Repository\QueueTaskRepository: '@printed.bundle.queue.repository.queue_task'

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Printed\Bundle\Queue\Queue;
 
 use Symfony\Component\Validator\Constraints as Assert;
@@ -17,12 +19,10 @@ abstract class AbstractQueuePayload
      * Bump this version in child classes to allow for an easy way to validate whether
      * a payload is from a legacy worker. Imagine the deployment process.
      *
-     * @var int
-     *
      * @Assert\NotBlank()
      * @Assert\Type(type="integer")
      */
-    protected $version = 1;
+    protected int $version = 1;
 
     /**
      * Queue message properties passed-through to OldSound\RabbitMqBundle\RabbitMq\ProducerInterface::publish()::$additionalProperties
@@ -31,10 +31,8 @@ abstract class AbstractQueuePayload
      * constants.
      *
      * This variable makes sense only during dispatching/publishing a queue task payload. Otherwise, it's always empty.
-     *
-     * @var array
      */
-    private $__queueMessageProperties;
+    private array $__queueMessageProperties;
 
     /**
      * Return the destination queue name.
@@ -67,8 +65,6 @@ abstract class AbstractQueuePayload
 
     /**
      * Return the payload version.
-     *
-     * @return int
      */
     public function getVersion(): int
     {
@@ -77,27 +73,11 @@ abstract class AbstractQueuePayload
 
     /**
      * Return all the properties for serialisation.
-     *
-     * @return array
      */
     public function getProperties(): array
     {
-        $payloadProperties = get_object_vars($this);
-
-        /*
-         * Filter private/internal properties starting with "__".
-         *
-         * array_filter() wasn't used due to lack of support of iterating over hashmap keys in php 5.5.
-         */
-        $filteredPayloadProperties = [];
-        foreach ($payloadProperties as $key => $value) {
-            if (0 === strpos($key, '__')) {
-                continue;
-            }
-
-            $filteredPayloadProperties[$key] = $value;
-        }
-
-        return $filteredPayloadProperties;
+        return array_filter(get_object_vars($this), function ($value, string $key) {
+            return !str_starts_with($key, '__');
+        }, ARRAY_FILTER_USE_BOTH);
     }
 }

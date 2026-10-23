@@ -1,18 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Printed\Bundle\Queue\Service;
 
 use Printed\Bundle\Queue\Service\NewDeploymentsDetector\NewDeploymentsDetectorStrategyInterface;
 
 class NewDeploymentsDetector
 {
-    /** @var NewDeploymentsDetectorStrategyInterface */
-    private $newDeploymentsDetectorStrategy;
-
     public function __construct(
-        NewDeploymentsDetectorStrategyInterface $newDeploymentsDetectorStrategy
+        private readonly NewDeploymentsDetectorStrategyInterface $newDeploymentsDetectorStrategy,
     ) {
-        $this->newDeploymentsDetectorStrategy = $newDeploymentsDetectorStrategy;
     }
 
     public function getCurrentDeploymentStamp(): string
@@ -20,7 +18,7 @@ class NewDeploymentsDetector
         return $this->newDeploymentsDetectorStrategy->getCurrentDeploymentStamp();
     }
 
-    public function setCurrentDeploymentStamp(string $deploymentStamp)
+    public function setCurrentDeploymentStamp(string $deploymentStamp): void
     {
         $this->newDeploymentsDetectorStrategy->setCurrentDeploymentStamp($deploymentStamp);
     }
