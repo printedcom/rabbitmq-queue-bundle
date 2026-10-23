@@ -11,14 +11,10 @@ use Printed\Bundle\Queue\Enum\QueueTaskStatus;
 use Printed\Bundle\Queue\Repository\QueueTaskRepository;
 
 #[ORM\Entity(repositoryClass: QueueTaskRepository::class)]
-#[ORM\Table(
-    name: 'queue_task',
-    indexes: [
-        new ORM\Index(columns: ['status']),
-        new ORM\Index(columns: ['queue_name']),
-        new ORM\Index(columns: ['created_date']),
-    ]
-)]
+#[ORM\Table(name: 'queue_task')]
+#[ORM\Index(columns: ['status'])]
+#[ORM\Index(columns: ['queue_name'])]
+#[ORM\Index(columns: ['created_date'])]
 class QueueTask implements QueueTaskInterface
 {
     use GetDataItemFromDataOrThrowTrait;
